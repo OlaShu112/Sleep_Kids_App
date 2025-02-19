@@ -2,22 +2,22 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserModel {
   String userId;
-  String childId;
+  List<String>? childId;
   String firstName;
   String lastName;
   String email;
   DateTime dateOfBirth;
-  String profileImageUrl;
+  String? profileImageUrl;
   String role;
 
   UserModel({
     required this.userId,
-    required this.childId,
+    this.childId,
     required this.firstName,
     required this.lastName,
     required this.email,
     required this.dateOfBirth,
-    required this.profileImageUrl,
+    this.profileImageUrl,
     required this.role,
   });
 
@@ -33,7 +33,7 @@ class UserModel {
       dateOfBirth:
           (data['dateOfBirth'] as Timestamp?)?.toDate() ?? DateTime.now(),
       profileImageUrl: data['profileImageUrl'] ?? '',
-      role: data['role'] ?? 'user',
+      role: data['role'] ?? 'Parent',
     );
   }
 
@@ -56,12 +56,12 @@ class UserModel {
   Map<String, dynamic> toMap() {
     return {
       'user_id': userId,
-      'childId':childId,
+      'childId': childId ?? [], 
       'firstName': firstName,
       'lastName': lastName,
       'email': email,
       'dateOfBirth': Timestamp.fromDate(dateOfBirth),
-      'profileImageUrl': profileImageUrl,
+      'profileImageUrl': profileImageUrl ?? '',
       'role': role,
     };
   }
