@@ -9,6 +9,61 @@ import 'package:sleep_kids_app/views/home/bedtime_stories_screen.dart';
 import 'package:sleep_kids_app/views/home/profile_screen.dart';
 import 'package:sleep_kids_app/views/home/achievements_screen.dart';
 
+// === Custom Navigation Drawer ===
+class CustomNavbar extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Drawer(
+      child: Container(
+        color: Colors.black.withOpacity(0.8),
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              padding: EdgeInsets.zero,
+              child: Container(
+                padding: EdgeInsets.all(20),
+                child: Text(
+                  'Menu',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blue),
+                ),
+              ),
+            ),
+            ListTile(
+              title: Text('Sleep Tracking', style: TextStyle(color: Colors.white)),
+              onTap: () => context.go('/sleep-tracking'),
+            ),
+            ListTile(
+              title: Text('Analytics', style: TextStyle(color: Colors.white)),
+              onTap: () => context.go('/analytics'),
+            ),
+            ListTile(
+              title: Text('Bedtime Stories', style: TextStyle(color: Colors.white)),
+              onTap: () => context.go('/bedtime-stories'),
+            ),
+            ListTile(
+              title: Text('Achievements', style: TextStyle(color: Colors.white)),
+              onTap: () => context.go('/achievements'),
+            ),
+            ListTile(
+              title: Text('Profile', style: TextStyle(color: Colors.white)),
+              onTap: () => context.go('/profile'),
+            ),
+            Divider(color: Colors.white70), // Adds a visual separator
+            ListTile(
+              title: Text('Logout', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+              leading: Icon(Icons.logout, color: Colors.redAccent),
+              onTap: () {
+                context.go('/'); // Navigate back to main.dart (Login Page)
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -54,6 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
+      drawer: CustomNavbar(), // ✅ Add CustomNavbar as a drawer
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -80,9 +136,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.all(16.0),
                 child: Align(
                   alignment: Alignment.topLeft,
-                  child: IconButton(
-                    icon: Icon(Icons.menu, size: 36, color: Colors.white),
-                    onPressed: () {},
+                  child: Builder(
+                    builder: (context) {
+                      return IconButton(
+                        icon: Icon(Icons.menu, size: 36, color: Colors.white),
+                        onPressed: () {
+                          Scaffold.of(context).openDrawer(); // ✅ Open drawer on tap
+                        },
+                      );
+                    },
                   ),
                 ),
               ),
@@ -113,3 +175,4 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+
