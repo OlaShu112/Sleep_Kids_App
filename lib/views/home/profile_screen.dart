@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:google_nav_bar/google_nav_bar.dart';
+
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -10,15 +9,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  int _selectedIndex = 4; // ✅ Make sure Profile is selected
 
-  final List<String> _routes = [
-    '/home',
-    '/sleep-tracking',
-    '/analytics',
-    '/bedtime-stories',
-    '/profile',
-  ];
 
   @override
   Widget build(BuildContext context) {
