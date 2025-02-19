@@ -47,7 +47,7 @@ class TindercardView extends StatelessWidget {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
-                  color: cards[index].boxColor,
+                  color: cards[index].boxColor.withOpacity(0.9),
                 ),
                 child: Text(
                   cards[index].title,
@@ -59,6 +59,8 @@ class TindercardView extends StatelessWidget {
               ),
             );
           },
+
+          allowedSwipeDirection: AllowedSwipeDirection.only(left: true,right: true),
         ),
       ),
     );

@@ -1,34 +1,50 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-
 class Goal {
-  String userId;
+  String goalId;
+  String childId;
   String goalDescription;
+  int duration;
+  DateTime WakeUpTime;
+  DateTime BedTime;
   bool isCompleted;
   DateTime targetDate;
 
   Goal({
-    required this.userId,
+    required this.goalId,
+    required this.childId,
     required this.goalDescription,
+    required this.duration,
+    required this.WakeUpTime,
+    required this.BedTime,
     required this.isCompleted,
     required this.targetDate,
   });
 
-  factory Goal.fromMap(Map<String, dynamic> map) {
+  factory Goal.fromDocument(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
     return Goal(
-      userId: map['userId'],
-      goalDescription: map['goalDescription'],
-      isCompleted: map['isCompleted'],
-      targetDate: (map['targetDate'] as Timestamp).toDate(),
+      goalId: doc.id,
+      childId: data['childId'],
+      goalDescription: data['goalDescription'] ?? '',
+      duration: data['duration'] ?? '',
+      WakeUpTime: data['WakeUpTIme'] ?? '',
+      BedTime: data['BedTime'] ?? '',
+      isCompleted: data['isCompleted'] ?? false,
+      targetDate:
+          (data['targetDate'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'userId': userId,
+      'childId': childId,
       'goalDescription': goalDescription,
+      'duration': duration,
+      'WakeUpTime': WakeUpTime,
+      'BedTime' : BedTime,
       'isCompleted': isCompleted,
-      'targetDate': targetDate,
+      'targetDate': Timestamp.fromDate(targetDate),
     };
   }
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:google_nav_bar/google_nav_bar.dart';
+
+
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({Key? key}) : super(key: key);
@@ -10,24 +10,7 @@ class AnalyticsScreen extends StatefulWidget {
 }
 
 class _AnalyticsScreenState extends State<AnalyticsScreen> {
-  int _selectedIndex = 2; // ✅ Set index to match 'Analytics' tab
 
-  final List<String> _routes = [
-    '/home',
-    '/sleep-tracking',
-    '/analytics',
-    '/bedtime-stories',
-    '/profile',
-  ];
-
-  void _onItemTapped(int index) {
-    if (_selectedIndex != index) {
-      setState(() {
-        _selectedIndex = index;
-      });
-      context.go(_routes[index]); // ✅ Navigate between pages
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
