@@ -21,7 +21,12 @@ class TindercardView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (stories.isEmpty) {
-      return const Center(child: Text("⚠️ No stories available"));
+      return const Center(
+        child: Text(
+          "⚠️ No stories available",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+      );
     }
 
     return CardSwiper(
@@ -33,7 +38,8 @@ class TindercardView extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
-              color: Colors.blueAccent.withOpacity(0.9),
+              border: Border.fromBorderSide(BorderSide(color: Colors.black)),
+              color: Colors.blueAccent,
             ),
             child: Center(
               child: Text(

@@ -36,7 +36,7 @@ class _BedtimeStoriesScreenState extends State<BedtimeStoriesScreen> {
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text("⚠️No bedtime stories available."));
+            return const Center(child: Text("No bedtime stories available."));
           }
 
           // Convert Firestore data into a list of Tindercard objects
@@ -53,14 +53,15 @@ class _BedtimeStoriesScreenState extends State<BedtimeStoriesScreen> {
             children: [
               const SizedBox(height: 20),
               const Center(
-                child: Icon(Icons.menu_book, size: 80, color: Colors.blueAccent),
+                child:
+                    Icon(Icons.menu_book, size: 80, color: Colors.blueAccent),
               ),
               const SizedBox(height: 20),
               Expanded(
                 child: SizedBox(
                   height: MediaQuery.of(context).size.height * 0.75,
                   width: MediaQuery.of(context).size.width * 0.9,
-                  child: TindercardView(stories: stories), 
+                  child: TindercardView(stories: stories),
                 ),
               ),
             ],
