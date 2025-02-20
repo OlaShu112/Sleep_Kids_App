@@ -1,12 +1,64 @@
 import 'package:flutter/material.dart';
-import 'package:sleep_kids_app/views/auth/signup_screen.dart'; // Import SignUpScreen
-import 'package:sleep_kids_app/views/home/home_screen.dart'; // Import HomeScreen
-import 'package:go_router/go_router.dart'; // Import GoRouter for navigation
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:go_router/go_router.dart'; // For navigation
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   String email = '';
   String password = '';
+  bool _isLoading = false; // To manage loading state
+
+  // Firebase Authentication Instance
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  // 🔹 Function to handle user login
+  Future<void> _loginUser() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true; // Show loading indicator
+    });
+
+    try {
+      await _auth.signInWithEmailAndPassword(email: email, password: password);
+      print("✅ Login successful!");
+      context.go('/home'); // Navigate to HomeScreen
+    } on FirebaseAuthException catch (e) {
+      String errorMessage = "🔥 Login failed. Please try again.";
+      if (e.code == 'user-not-found') {
+        errorMessage = "❌ No user found for this email.";
+      } else if (e.code == 'wrong-password') {
+        errorMessage = "❌ Incorrect password.";
+      }
+      _showErrorDialog(errorMessage);
+    } finally {
+      setState(() {
+        _isLoading = false; // Hide loading indicator
+      });
+    }
+  }
+
+  // 🔹 Function to show error dialog
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text("Login Error"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            child: Text("OK"),
+            onPressed: () => Navigator.of(ctx).pop(),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,26 +87,22 @@ class LoginScreen extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      // Use GoRouter to navigate to HomeScreen
-                      context.go('/home'); // Navigates to the home screen using GoRouter
-                    }
-                  },
+                  onPressed: _isLoading ? null : _loginUser, // Disable button when loading
                   style: ElevatedButton.styleFrom(
                     padding: EdgeInsets.symmetric(vertical: 15),
                     backgroundColor: Colors.blue,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                   ),
-                  child: Text('Login', style: TextStyle(fontSize: 18, color: Colors.white)),
+                  child: _isLoading
+                      ? CircularProgressIndicator(color: Colors.white) // Show loading indicator
+                      : Text('Login', style: TextStyle(fontSize: 18, color: Colors.white)),
                 ),
               ),
               SizedBox(height: 10),
               Center(
                 child: TextButton(
                   onPressed: () {
-                    // Navigate to the SignUpScreen using GoRouter
-                    context.go('/signup'); // Navigates to the SignUp screen using GoRouter
+                    context.go('/signup'); // Navigate to SignUp screen
                   },
                   child: Text("Don't have an account? Sign Up", style: TextStyle(color: Colors.blue)),
                 ),

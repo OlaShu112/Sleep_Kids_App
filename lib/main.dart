@@ -18,11 +18,42 @@ import 'views/home/dashboard_screen.dart';
 import 'views/home/sleep_goal_screen.dart' as sleep_goal;
 import 'views/home/achievements_screen.dart';
 import 'widgets/main_layout.dart';
+import 'package:sleep_kids_app/widgets/main_layout.dart';
+import 'package:sleep_kids_app/views/home/sleep_goal_screen.dart' as sleep_goal;
+import 'package:sleep_kids_app/views/home/achievements_screen.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  runApp(MyApp());
+
+  // ✅ Initialize Firebase differently for web and mobile
+  if (kIsWeb) {
+    await Firebase.initializeApp(
+      options: FirebaseOptions(
+        apiKey: "AIzaSyDabNeTVkTt5tW0T8EtAB6yBAL6PJJEz7o",
+        authDomain: "sleep-apps-efda6.firebaseapp.com",
+        projectId: "sleep-apps-efda6",
+        storageBucket: "sleep-apps-efda6.appspot.com",
+        messagingSenderId: "275997062867",
+        appId: "1:275997062867:web:477d257273ac42af110626",
+        measurementId: "G-B354J4K5CS",
+      ),
+    );
+  } else {
+    await Firebase.initializeApp();
+  }
+
+  print("✅ Firebase Initialized Successfully!");
+
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => AuthProvider()), // ✅ Initialize AuthProvider
+      ],
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

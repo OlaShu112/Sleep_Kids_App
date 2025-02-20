@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "305553373229",
-    "project_id": "sleepkids-bd6c5",
-    "storage_bucket": "sleepkids-bd6c5.firebasestorage.app"
+    "project_number": "275997062867",
+    "project_id": "sleep-apps-efda6",
+    "storage_bucket": "sleep-apps-efda6.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:305553373229:android:74b88cc96862d2700360a4",
+        "mobilesdk_app_id": "1:275997062867:android:af5dabf91a095d39110626",
         "android_client_info": {
           "package_name": "com.example.project"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCqFaQDB-DCNE8bySquZemfleQ3TSMT4vg"
+          "current_key": "AIzaSyAzZ0p194V_PqxlZXRogFOPXDnV5YIlSTc"
         }
       ],
       "services": {

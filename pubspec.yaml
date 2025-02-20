@@ -49,7 +49,7 @@ dependencies:
   # Firebase and Google Sign-In dependencies
   firebase_core: ^3.11.0   # Latest stable version of firebase_core
   firebase_auth: ^5.4.2    # Latest stable version of firebase_auth
-  cloud_firestore: ^5.6.3   # Add this line for Firestore
+  cloud_firestore: ^5.6.4   # Add this line for Firestore
  
   
   
