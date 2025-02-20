@@ -72,7 +72,33 @@ class FirebaseService {
       print("❌ Error Fetching Child Profiles: $e");
       return [];
     }
+  } 
+
+//Fetch all children linked to the current user
+  Stream<QuerySnapshot> fetchChildren(String guardianId) {
+  return FirebaseFirestore.instance
+      .collection('child_profiles')
+      .where('guardianId', isEqualTo: guardianId)
+      .snapshots();
+}
+
+//2️⃣ Fetch a child's sleep goal data
+Future<DocumentSnapshot?> fetchChildGoal(String childId) async {
+  final goalDoc = await FirebaseFirestore.instance.collection('goals').doc(childId).get();
+  return goalDoc.exists ? goalDoc : null;
+}
+
+//Save or update a child's sleep goal
+Future<void> saveGoal(String childId, double bedTime, double wakeUpTime) async {
+  try {
+    await FirebaseFirestore.instance.collection('goals').doc(childId).set({
+      'bedTime': bedTime,
+      'wakeUpTime': wakeUpTime,
+    }, SetOptions(merge: true)); // ✅ Merge to update existing goal
+  } catch (e) {
+    print("❌ Error saving goal: $e");
   }
+}
 
 
 }
