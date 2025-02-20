@@ -12,6 +12,7 @@ import 'package:sleep_kids_app/views/home/bedtime_stories_screen.dart';
 import 'package:sleep_kids_app/views/home/profile_screen.dart';
 import 'package:sleep_kids_app/widgets/main_layout.dart';
 import 'package:sleep_kids_app/views/home/sleep_goal_screen.dart' as sleep_goal;
+import 'package:sleep_kids_app/views/home/personal_information_screen.dart'; // ✅ Import Personal Information Screen
 
 
 final GoRouter router = GoRouter(
@@ -30,7 +31,7 @@ final GoRouter router = GoRouter(
    
     GoRoute(
       path: '/home',
-      builder: (context, state) => MainLayout(child: const HomeScreen()),
+      builder: (context, state) => MainLayout(child:  HomeScreen()),
     ),
     GoRoute(
       path: '/sleep-tracking',
@@ -46,7 +47,7 @@ final GoRouter router = GoRouter(
     ),
     GoRoute(
       path: '/profile',
-      builder: (context, state) => MainLayout(child: const ProfileScreen()),
+      builder: (context, state) => MainLayout(child:  ProfileScreen()),
     ),
     GoRoute(
       path: '/goals',
@@ -64,5 +65,21 @@ final GoRouter router = GoRouter(
       path: '/achievement',
       builder: (context, state) => MainLayout(child: const AchievementsScreen()),
     ),
+    // GoRoute(
+    //   path: '/personal-information', // ✅ Add Route for Personal Information Screen
+    //   builder: (context, state) => PersonalInformationScreen(),
+    // ),
+//     GoRoute(
+//   path: '/change-password',
+//   builder: (context, state) => ChangePasswordScreen(),
+// ),
+// GoRoute(
+//   path: '/privacy-settings',
+//   builder: (context, state) => PrivacySettingsScreen(),
+// ),
+// GoRoute(
+//   path: '/notification-preferences',
+//   builder: (context, state) => NotificationPreferencesScreen(),
+// ),
   ],
 );
