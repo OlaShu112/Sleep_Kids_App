@@ -27,9 +27,9 @@ class Goal {
       goalId: doc.id,
       childId: data['childId'],
       goalDescription: data['goalDescription'] ?? '',
-      duration: data['duration'] ?? '',
-      WakeUpTime: data['WakeUpTIme'] ?? '',
-      BedTime: data['BedTime'] ?? '',
+      duration: data['duration'] ?? 0,
+      WakeUpTime: data['WakeUpTIme'] ?? 0,
+      BedTime: data['BedTime'] ?? 0,
       isCompleted: data['isCompleted'] ?? false,
       targetDate:
           (data['targetDate'] as Timestamp?)?.toDate() ?? DateTime.now(),

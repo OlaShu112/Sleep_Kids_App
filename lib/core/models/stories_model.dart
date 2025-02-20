@@ -1,22 +1,22 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class UserModel {
+class StoriesModel {
   String storyId;
   String description;
   String context;
-  String profileImageUrl;
+  String? profileImageUrl;
 
-  UserModel({
+  StoriesModel({
     required this.storyId,
     required this.description,
     required this.context,
-    required this.profileImageUrl,
+    this.profileImageUrl,
   });
 
   // Factory constructor to create a UserModel instance from a Firestore document
-  factory UserModel.fromDocument(DocumentSnapshot doc) {
+  factory StoriesModel.fromDocument(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>? ?? {};
-    return UserModel(
+    return StoriesModel(
       storyId: doc.id,
       description: data['description'],
       context: data['context'],
@@ -25,8 +25,8 @@ class UserModel {
   }
 
   // Factory constructor to create a UserModel instance from a map
-  factory UserModel.fromMap(Map<String, dynamic> map) {
-    return UserModel(
+  factory StoriesModel.fromMap(Map<String, dynamic> map) {
+    return StoriesModel(
       storyId: map['storyId'],
       description: map['description'],
       context: map['context'],
