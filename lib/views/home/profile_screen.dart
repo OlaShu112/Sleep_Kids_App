@@ -16,6 +16,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   String lastName = "";
   String email = "";
+  String profileImageUrl = "";
 
   @override
   void initState() {
@@ -33,6 +34,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         setState(() {
           lastName = userDoc.get('lastName') ?? 'Unknown';
           email = userDoc.get('email') ?? 'No Email';
+          profileImageUrl = userDoc.get('profileImageUrl') ??
+              ""; 
         });
       }
     }
@@ -47,8 +50,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: [
           Center(
             child: Column(
-              children: [
-                const Icon(Icons.person, size: 80, color: Colors.deepPurple),
+              children: [  //add image
+              ClipRRect(
+                  borderRadius: BorderRadius.circular(50), // Circular profile image
+                  child: profileImageUrl.isNotEmpty
+                      ? Image.network(
+                          profileImageUrl, // Load image from Firestore URL
+                          width: 100,
+                          height: 100,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Icon(Icons.person, size: 80, color: Colors.deepPurple),
+                        )
+                      : Icon(Icons.person, size: 80, color: Colors.deepPurple),
+                ),
+              
                 SizedBox(height: 10),
                 Text(
                   lastName,
