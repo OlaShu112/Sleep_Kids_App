@@ -5,7 +5,6 @@ class ChildProfile {// List UserId
   String childName;
   List<String>? issueId;
   List<String>? sleepId; //multiple issueId for a child and is optional
-  String? goalId;
   DateTime dateOfBirth;
   String? profileImageUrl;
   List<String> guardianId;
@@ -15,7 +14,7 @@ class ChildProfile {// List UserId
     required this.childName,
     this.issueId,
     this.sleepId,
-    this.goalId,
+
     required this.dateOfBirth,
     this.profileImageUrl,
     required this.guardianId,
@@ -28,11 +27,8 @@ class ChildProfile {// List UserId
     return ChildProfile(
       childId: doc.id,
       childName: data['childName'] ?? 'Unknown',
-      issueId:
-          data['issueId'] != null ? List<String>.from(data['issueId']) : null,
-      sleepId:
-          data['sleepId'] != null ? List<String>.from(data['sleepId']) : null,
-      goalId:data['goalId'] ?? "",
+      issueId:data['issueId'] != null ? List<String>.from(data['issueId']) : null,
+      sleepId: data['sleepId'] != null? List<String>.from(data['sleepId']): null,
       dateOfBirth: (data['dateOfBirth'] as Timestamp).toDate(),
       profileImageUrl: data['profileImageUrl'],
       guardianId: data['guardianId'] ?? '',
@@ -45,6 +41,7 @@ class ChildProfile {// List UserId
       'childName': childName,
       'issueId': issueId ?? [],
       'sleepId': sleepId ?? [],
+      'awakeningsId': sleepId ?? [],
       'dateOfBirth': Timestamp.fromDate(dateOfBirth),
       'profileImageUrl': profileImageUrl ?? '',
       'guardianId': guardianId,
