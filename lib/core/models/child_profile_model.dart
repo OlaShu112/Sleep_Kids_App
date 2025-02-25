@@ -1,22 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class ChildProfile {
+class ChildProfile {// List UserId
   String childId;
   String childName;
   List<String>? issueId;
   List<String>? sleepId; //multiple issueId for a child and is optional
-  List<String>? awakeningsId;
+  String? goalId;
   DateTime dateOfBirth;
   String? profileImageUrl;
-
-  String guardianId;
+  List<String> guardianId;
 
   ChildProfile({
     required this.childId,
     required this.childName,
     this.issueId,
     this.sleepId,
-    this.awakeningsId,
+    this.goalId,
     required this.dateOfBirth,
     this.profileImageUrl,
     required this.guardianId,
@@ -29,9 +28,11 @@ class ChildProfile {
     return ChildProfile(
       childId: doc.id,
       childName: data['childName'] ?? 'Unknown',
-      issueId:data['issueId'] != null ? List<String>.from(data['issueId']) : null,
-      sleepId: data['sleepId'] != null? List<String>.from(data['sleepId']): null,
-      awakeningsId: data['awakeningsId'] != null? List<String>.from(data['awakeningsId']): null,
+      issueId:
+          data['issueId'] != null ? List<String>.from(data['issueId']) : null,
+      sleepId:
+          data['sleepId'] != null ? List<String>.from(data['sleepId']) : null,
+      goalId:data['goalId'] ?? "",
       dateOfBirth: (data['dateOfBirth'] as Timestamp).toDate(),
       profileImageUrl: data['profileImageUrl'],
       guardianId: data['guardianId'] ?? '',
@@ -44,7 +45,6 @@ class ChildProfile {
       'childName': childName,
       'issueId': issueId ?? [],
       'sleepId': sleepId ?? [],
-      'awakeningsId': sleepId ?? [],
       'dateOfBirth': Timestamp.fromDate(dateOfBirth),
       'profileImageUrl': profileImageUrl ?? '',
       'guardianId': guardianId,
