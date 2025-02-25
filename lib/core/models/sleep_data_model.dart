@@ -46,6 +46,7 @@ class SleepData {
     return SleepData(
       sleepId: sleepId ?? '',
       childId: map['child_id'] ?? '',
+      awakeningsId:map['awakeningsId'] ?? '',
       date: (map['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
       bedtime: (map['bedtime'] as Timestamp?)?.toDate() ?? DateTime.now(),
       wakeUpTime: (map['wakeUp'] as Timestamp?)?.toDate() ?? DateTime.now(),
