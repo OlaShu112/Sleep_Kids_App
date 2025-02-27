@@ -123,7 +123,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
         sleepId: [],
         dateOfBirth: _selectedDate!,
         profileImageUrl: "",
-        guardianId: [user.uid],
+        guardianId: user.uid,
       );
 
       await _firebaseService.addChildProfile(newChild);
