@@ -89,7 +89,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
     }
   }
 
-  // 🔹 Show Date Picker for Child's Date of Birth
+  // Show Date Picker for Child's Date of Birth
   Future<void> _pickDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -105,7 +105,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
     }
   }
 
-  // 🔹 Add Child Profile (from the early code)
+  // Add Child Profile (from the early code)
   void _addChild() async {
     User? user = _auth.currentUser;
     if (user != null &&
@@ -121,19 +121,18 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
             ? selectedIssues
             : [], // ✅ Store selected issues
         sleepId: [],
-        awakeningsId: [],
         dateOfBirth: _selectedDate!,
         profileImageUrl: "",
-        guardianId: user.uid,
+        guardianId: [user.uid],
       );
 
       await _firebaseService.addChildProfile(newChild);
-      _fetchChildren(); // ✅ Refresh the list
+      _fetchChildren(); // Refresh the list
 
       _childNameController.clear();
       setState(() {
         _selectedDate = null;
-        selectedIssues = []; // ✅ Reset issues selection
+        selectedIssues = []; // Reset issues selection
       });
 
       ScaffoldMessenger.of(context).showSnackBar(

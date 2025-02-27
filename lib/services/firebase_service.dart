@@ -17,6 +17,7 @@
 // It does not handle UI state updates.
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:sleep_kids_app/core/models/goals_model.dart';
 import 'package:sleep_kids_app/core/models/user_model.dart';
 import 'package:sleep_kids_app/core/models/child_profile_model.dart';
 
@@ -99,6 +100,16 @@ Future<void> saveGoal(String childId, double bedTime, double wakeUpTime) async {
     print("❌ Error saving goal: $e");
   }
 }
+Future<void> addGoal(Goal NewGoal) async {
+    try {
+      await _db.collection('goals')
+          .doc(NewGoal.goalId) // ✅ Use childId for consistency
+          .set(NewGoal.toMap()); // ✅ Use .set() instead of .add()
+      print("✅ Child Profile Added Successfully!");
+    } catch (e) {
+      print("❌ Error Adding Child Profile: $e");
+    }
+  }
 
 
 }

@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class SleepData {
   String sleepId; // Changed to String to match Firestore ID format
   String childId; // Changed to match Firebase schema
+  List<String>? awakeningsId;
   DateTime date;
   DateTime bedtime;
   DateTime wakeUpTime;
@@ -15,6 +16,7 @@ class SleepData {
     required this.childId,
     required this.date,
     required this.bedtime,
+    this.awakeningsId,
     required this.wakeUpTime,
     required this.sleepDuration,
     required this.sleepQuality,
@@ -28,6 +30,9 @@ class SleepData {
       sleepId: doc.id,
       childId: data['child_id'] ?? '',
       date: (data['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      awakeningsId: data['awakeningsId'] != null
+          ? List<String>.from(data['awakeningsId'])
+          : null,
       bedtime: (data['bedtime'] as Timestamp?)?.toDate() ?? DateTime.now(),
       wakeUpTime:
           (data['wakeUptime'] as Timestamp?)?.toDate() ?? DateTime.now(),
@@ -42,6 +47,7 @@ class SleepData {
     return SleepData(
       sleepId: sleepId ?? '',
       childId: map['child_id'] ?? '',
+      awakeningsId:map['awakeningsId'] ?? '',
       date: (map['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
       bedtime: (map['bedtime'] as Timestamp?)?.toDate() ?? DateTime.now(),
       wakeUpTime: (map['wakeUp'] as Timestamp?)?.toDate() ?? DateTime.now(),
@@ -57,6 +63,7 @@ class SleepData {
       'child_id': childId, // Matches Firebase foreign key
       'date': Timestamp.fromDate(date),
       'sleepDuration': sleepDuration,
+      'awakeningsId': awakeningsId ?? [],
       'sleepQuality': sleepQuality,
       'notes': notes,
     };

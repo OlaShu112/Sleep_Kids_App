@@ -1,24 +1,23 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ChildProfile {
+  // List UserId
   String childId;
   String childName;
-  final List<String>? issueId;
-  List<String>? sleepId; // multiple issueId for a child and is optional
+  List<String>? issueId;
+  List<String>? sleepId; //multiple issueId for a child and is optional
   List<String>? awakeningsId;
-  String? goalId;
-  final DateTime dateOfBirth;
+  DateTime dateOfBirth;
   String? profileImageUrl;
-  final String guardianId;
 
-  // Constructor
+  String guardianId;
+
   ChildProfile({
     required this.childId,
     required this.childName,
     this.issueId,
     this.sleepId,
     this.awakeningsId,
-    this.goalId,
     required this.dateOfBirth,
     this.profileImageUrl,
     required this.guardianId,
@@ -31,12 +30,15 @@ class ChildProfile {
 
     return ChildProfile(
       childId: doc.id,
-      childName: data['childName'] ?? '',
-      issueId: _getListFromField(data['issueId']),
-      sleepId: _getListFromField(data['sleepId']),
-      awakeningsId: _getListFromField(data['awakeningsId']),
-      goalId: data['goalId'] as String?,
-      dateOfBirth: _getDateFromField(data['dateOfBirth']), // Adjusted line
+      childName: data['childName'] ?? 'Unknown',
+      issueId:
+          data['issueId'] != null ? List<String>.from(data['issueId']) : null,
+      sleepId:
+          data['sleepId'] != null ? List<String>.from(data['sleepId']) : null,
+      awakeningsId: data['awakeningsId'] != null
+          ? List<String>.from(data['awakeningsId'])
+          : null,
+      dateOfBirth: (data['dateOfBirth'] as Timestamp).toDate(),
       profileImageUrl: data['profileImageUrl'],
       guardianId: data['guardianId'] ?? '',
     );
@@ -79,15 +81,11 @@ class ChildProfile {
   Map<String, dynamic> toMap() {
     return {
       'childName': childName,
-      'issueId': issueId ?? [], // Use empty list if issueId is null
-      'sleepId': sleepId ?? [], // Use empty list if sleepId is null
-      'awakeningsId':
-          awakeningsId ?? [], // Use empty list if awakeningsId is null
-      'goalId': goalId,
-      'dateOfBirth':
-          Timestamp.fromDate(dateOfBirth), // Convert DateTime to Timestamp
-      'profileImageUrl': profileImageUrl ??
-          '', // Default to empty string if profileImageUrl is null
+      'issueId': issueId ?? [],
+      'sleepId': sleepId ?? [],
+      'awakeningsId': sleepId ?? [],
+      'dateOfBirth': Timestamp.fromDate(dateOfBirth),
+      'profileImageUrl': profileImageUrl ?? '',
       'guardianId': guardianId,
     };
   }
