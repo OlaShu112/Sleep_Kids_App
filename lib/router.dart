@@ -1,4 +1,3 @@
-
 import 'package:go_router/go_router.dart';
 import 'package:sleep_kids_app/views/auth/login_screen.dart';
 import 'package:sleep_kids_app/views/auth/signup_screen.dart';
@@ -12,8 +11,7 @@ import 'package:sleep_kids_app/views/home/bedtime_stories_screen.dart';
 import 'package:sleep_kids_app/views/home/profile_screen.dart';
 import 'package:sleep_kids_app/widgets/main_layout.dart';
 import 'package:sleep_kids_app/views/home/sleep_goal_screen.dart' as sleep_goal;
-import 'package:sleep_kids_app/views/home/personal_information_screen.dart'; // ✅ Import Personal Information Screen
-
+// import 'package:sleep_kids_app/views/home/personal_information_screen.dart'; // ✅ Import Personal Information Screen
 
 final GoRouter router = GoRouter(
   initialLocation: '/login', // Default to login page
@@ -28,14 +26,14 @@ final GoRouter router = GoRouter(
       builder: (context, state) => SignUpScreen(),
     ),
 
-   
     GoRoute(
       path: '/home',
-      builder: (context, state) => MainLayout(child:  HomeScreen()),
+      builder: (context, state) => MainLayout(child: HomeScreen()),
     ),
     GoRoute(
       path: '/sleep-tracking',
-      builder: (context, state) => MainLayout(child: const SleepTrackingScreen()),
+      builder: (context, state) =>
+          MainLayout(child: const SleepTrackingScreen()),
     ),
     GoRoute(
       path: '/analytics',
@@ -43,11 +41,12 @@ final GoRouter router = GoRouter(
     ),
     GoRoute(
       path: '/bedtime-stories',
-      builder: (context, state) => MainLayout(child: const BedtimeStoriesScreen()),
+      builder: (context, state) =>
+          MainLayout(child: const BedtimeStoriesScreen()),
     ),
     GoRoute(
       path: '/profile',
-      builder: (context, state) => MainLayout(child:  ProfileScreen()),
+      builder: (context, state) => MainLayout(child: ProfileScreen()),
     ),
     GoRoute(
       path: '/goals',
@@ -63,7 +62,8 @@ final GoRouter router = GoRouter(
     ),
     GoRoute(
       path: '/achievement',
-      builder: (context, state) => MainLayout(child: const AchievementsScreen()),
+      builder: (context, state) =>
+          MainLayout(child: const AchievementsScreen()),
     ),
     // GoRoute(
     //   path: '/personal-information', // ✅ Add Route for Personal Information Screen

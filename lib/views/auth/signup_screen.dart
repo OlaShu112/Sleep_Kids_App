@@ -20,10 +20,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _dateOfBirthController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   bool agreeToTerms = false;
-  final FirebaseService firebaseService = FirebaseService(); // Initialize Firebase Service
+  final FirebaseService firebaseService =
+      FirebaseService(); // Initialize Firebase Service
 
   @override
   Widget build(BuildContext context) {
@@ -43,12 +45,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
             children: [
               Text(
                 'Create an Account',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blue),
+                style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue),
               ),
               SizedBox(height: 20),
               _buildTextField('First Name', Icons.person, _firstNameController),
               _buildTextField('Last Name', Icons.person, _lastNameController),
-              
+
               // ✅ Date of Birth with Date Picker
               TextFormField(
                 controller: _dateOfBirthController,
@@ -56,7 +61,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 decoration: InputDecoration(
                   labelText: "Date of Birth",
                   prefixIcon: Icon(Icons.calendar_today, color: Colors.blue),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10)),
                   filled: true,
                   fillColor: Colors.grey[200],
                 ),
@@ -70,7 +76,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                   if (picked != null) {
                     setState(() {
-                      _dateOfBirthController.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                      _dateOfBirthController.text =
+                          "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
                     });
                   }
                 },
@@ -82,9 +89,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 },
               ),
 
-              _buildTextField('Email Address', Icons.email, _emailController, isEmail: true),
-              _buildTextField('Password', Icons.lock, _passwordController, isPassword: true),
-              _buildTextField('Confirm Password', Icons.lock, _confirmPasswordController, isPassword: true),
+              _buildTextField('Email Address', Icons.email, _emailController,
+                  isEmail: true),
+              _buildTextField('Password', Icons.lock, _passwordController,
+                  isPassword: true),
+              _buildTextField(
+                  'Confirm Password', Icons.lock, _confirmPasswordController,
+                  isPassword: true),
 
               SizedBox(height: 10),
               Row(
@@ -105,12 +116,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         children: [
                           TextSpan(
                             text: 'Terms & Conditions',
-                            style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                                color: Colors.blue,
+                                fontWeight: FontWeight.bold),
                           ),
                           TextSpan(text: ' and '),
                           TextSpan(
                             text: 'Privacy Policy',
-                            style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                                color: Colors.blue,
+                                fontWeight: FontWeight.bold),
                           ),
                         ],
                       ),
@@ -134,9 +149,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       // ✅ Convert Date String to DateTime with Error Handling
                       DateTime parsedDate;
                       try {
-                        parsedDate = DateTime.parse(_dateOfBirthController.text);
+                        parsedDate =
+                            DateTime.parse(_dateOfBirthController.text);
                       } catch (e) {
-                        print('❌ Invalid Date Format: $_dateOfBirthController.text');
+                        print(
+                            '❌ Invalid Date Format: $_dateOfBirthController.text');
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text("Invalid Date Format")),
                         );
@@ -153,7 +170,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                       try {
                         // ✅ Create user in Firebase Auth
-                        UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                        UserCredential userCredential = await FirebaseAuth
+                            .instance
+                            .createUserWithEmailAndPassword(
                           email: email,
                           password: password,
                         );
@@ -178,7 +197,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
                         // ✅ Navigate to LoginScreen after successful sign-up
                         context.go('/login');
-
                       } catch (e) {
                         print('❌ Error adding user to Firestore: $e');
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -190,9 +208,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   style: ElevatedButton.styleFrom(
                     padding: EdgeInsets.symmetric(vertical: 15),
                     backgroundColor: Colors.blue,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30)),
                   ),
-                  child: Text('Sign Up', style: TextStyle(fontSize: 18, color: Colors.white)),
+                  child: Text('Sign Up',
+                      style: TextStyle(fontSize: 18, color: Colors.white)),
                 ),
               ),
               SizedBox(height: 10),
@@ -201,7 +221,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   onPressed: () {
                     context.go('/login');
                   },
-                  child: Text('Already have an account? Login', style: TextStyle(color: Colors.blue)),
+                  child: Text('Already have an account? Login',
+                      style: TextStyle(color: Colors.blue)),
                 ),
               ),
             ],
@@ -212,7 +233,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   // ✅ Inserted _buildTextField function
-  Widget _buildTextField(String label, IconData icon, TextEditingController controller,
+  Widget _buildTextField(
+      String label, IconData icon, TextEditingController controller,
       {bool isPassword = false, bool isEmail = false}) {
     return Padding(
       padding: EdgeInsets.only(bottom: 10),
@@ -229,8 +251,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
         ),
         validator: (value) {
           if (value == null || value.isEmpty) return 'This field is required';
-          if (isEmail && !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) return 'Enter a valid email';
-          if (isPassword && value.length < 6) return 'Password must be at least 6 characters';
+          if (isEmail && !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value))
+            return 'Enter a valid email';
+          if (isPassword && value.length < 6)
+            return 'Password must be at least 6 characters';
           return null;
         },
       ),

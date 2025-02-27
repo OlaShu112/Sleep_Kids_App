@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-
-
 class SleepGoalScreen extends StatefulWidget {
   const SleepGoalScreen({super.key});
 
@@ -11,7 +9,7 @@ class SleepGoalScreen extends StatefulWidget {
 
 class _SleepGoalScreenState extends State<SleepGoalScreen> {
   double targetBedtime = 22.0; // Default 10:00 PM
-  double targetWakeup = 7.0;   // Default 7:00 AM
+  double targetWakeup = 7.0; // Default 7:00 AM
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +25,6 @@ class _SleepGoalScreenState extends State<SleepGoalScreen> {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
-
             Text("Target Bedtime: \${targetBedtime.toInt()}:00"),
             Slider(
               value: targetBedtime,
@@ -39,7 +36,6 @@ class _SleepGoalScreenState extends State<SleepGoalScreen> {
                 setState(() => targetBedtime = value);
               },
             ),
-
             Text("Target Wake-up Time: \${targetWakeup.toInt()}:00"),
             Slider(
               value: targetWakeup,
@@ -51,7 +47,6 @@ class _SleepGoalScreenState extends State<SleepGoalScreen> {
                 setState(() => targetWakeup = value);
               },
             ),
-
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {

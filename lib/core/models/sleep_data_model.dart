@@ -29,7 +29,8 @@ class SleepData {
       childId: data['child_id'] ?? '',
       date: (data['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
       bedtime: (data['bedtime'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      wakeUpTime: (data['wakeUptime'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      wakeUpTime:
+          (data['wakeUptime'] as Timestamp?)?.toDate() ?? DateTime.now(),
       sleepDuration: data['sleepDuration'] ?? 0,
       sleepQuality: data['sleepQuality'] ?? 0,
       notes: data['notes'] ?? '',
@@ -44,7 +45,6 @@ class SleepData {
       date: (map['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
       bedtime: (map['bedtime'] as Timestamp?)?.toDate() ?? DateTime.now(),
       wakeUpTime: (map['wakeUp'] as Timestamp?)?.toDate() ?? DateTime.now(),
-
       sleepDuration: map['sleepDuration'] ?? 0,
       sleepQuality: map['sleepQuality'] ?? 0,
       notes: map['notes'] ?? '',

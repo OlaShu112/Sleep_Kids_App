@@ -28,7 +28,7 @@ class _EducationScreenState extends State<EducationScreen>
   }
 
   // fetch data from login. need to update.
-  String currentUserId = "user123"; 
+  String currentUserId = "user123";
   Stream<QuerySnapshot> _fetchChildIssues() {
     return FirebaseFirestore.instance
         .collection('children')
@@ -160,23 +160,31 @@ class _EducationScreenState extends State<EducationScreen>
                         StreamBuilder<QuerySnapshot>(
                           stream: _fetchChildIssues(),
                           builder: (context, snapshot) {
-                            if (snapshot.connectionState == ConnectionState.waiting) {
-                              return const Center(child: CircularProgressIndicator());
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Center(
+                                  child: CircularProgressIndicator());
                             }
 
-                            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                              return const Center(child: Text('No advice available.'));
+                            if (!snapshot.hasData ||
+                                snapshot.data!.docs.isEmpty) {
+                              return const Center(
+                                  child: Text('No advice available.'));
                             }
 
                             // Flatten child issues data
                             final childData = snapshot.data!.docs
                                 .map((childDoc) {
-                                  final childName = childDoc['name'] ?? 'Unknown';
-                                  final issues =
-                                      childDoc['issues'] as Map<String, dynamic>? ?? {};
+                                  final childName =
+                                      childDoc['name'] ?? 'Unknown';
+                                  final issues = childDoc['issues']
+                                          as Map<String, dynamic>? ??
+                                      {};
                                   return issues.entries.map((entry) {
-                                    final issue = entry.value['issue'] ?? 'Unknown Issue';
-                                    final solution = entry.value['solution'] ?? 'No solution provided';
+                                    final issue =
+                                        entry.value['issue'] ?? 'Unknown Issue';
+                                    final solution = entry.value['solution'] ??
+                                        'No solution provided';
                                     return {
                                       'childName': childName,
                                       'issue': issue,
@@ -193,12 +201,14 @@ class _EducationScreenState extends State<EducationScreen>
                               shrinkWrap: true,
                               padding: const EdgeInsets.all(16),
                               itemCount: childData.length,
-                              separatorBuilder: (context, index) => const Divider(),
+                              separatorBuilder: (context, index) =>
+                                  const Divider(),
                               itemBuilder: (context, index) {
                                 final item = childData[index];
                                 return Container(
                                   padding: const EdgeInsets.all(12),
-                                  margin: const EdgeInsets.symmetric(vertical: 5),
+                                  margin:
+                                      const EdgeInsets.symmetric(vertical: 5),
                                   decoration: BoxDecoration(
                                     color: Colors.lightGreen[100],
                                     borderRadius: BorderRadius.circular(10),
@@ -211,7 +221,8 @@ class _EducationScreenState extends State<EducationScreen>
                                     ],
                                   ),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         "👶 Child: ${item['childName']}",

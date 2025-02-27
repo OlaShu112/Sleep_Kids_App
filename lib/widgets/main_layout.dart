@@ -27,10 +27,7 @@ class _MainLayoutState extends State<MainLayout> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final location = GoRouterState
-        .of(context)
-        .uri
-        .toString();
+    final location = GoRouterState.of(context).uri.toString();
     setState(() {
       _selectedIndex = _routes.indexOf(location);
     });
@@ -50,7 +47,7 @@ class _MainLayoutState extends State<MainLayout> {
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/nav_bg.jpg'),
+            image: AssetImage('nav_bg.jpg'),
             fit: BoxFit.cover,
           ),
           boxShadow: [BoxShadow(blurRadius: 20, color: Colors.black45)],
@@ -82,7 +79,6 @@ class _MainLayoutState extends State<MainLayout> {
                   GButton(icon: Icons.flag, text: 'Goal'),
                   GButton(icon: Icons.school, text: 'Education'),
                   GButton(icon: Icons.emoji_events, text: 'Achievements'),
-
                 ],
               ),
             ),
