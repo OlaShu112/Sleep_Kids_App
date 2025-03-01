@@ -22,6 +22,7 @@ class _MainLayoutState extends State<MainLayout> {
     '/goal',
     '/education',
     '/achievement',
+    '/icon-watch/:sleepId', // Added route with watch icon
   ];
 
   @override
@@ -79,6 +80,8 @@ class _MainLayoutState extends State<MainLayout> {
                   GButton(icon: Icons.flag, text: 'Goal'),
                   GButton(icon: Icons.school, text: 'Education'),
                   GButton(icon: Icons.emoji_events, text: 'Achievements'),
+                  GButton(
+                      icon: Icons.watch, text: 'Watch'), // Added the watch icon
                 ],
               ),
             ),

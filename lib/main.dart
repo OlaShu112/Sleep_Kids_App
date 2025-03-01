@@ -17,6 +17,7 @@ import 'views/home/education_screen.dart';
 import 'views/home/dashboard_screen.dart';
 import 'views/home/sleep_goal_screen.dart' as sleep_goal;
 import 'views/home/achievements_screen.dart';
+import 'views/home/SleepDataScreen.dart';
 import 'widgets/main_layout.dart';
 //import 'package:sleep_kids_app/widgets/main_layout.dart';
 //import 'package:sleep_kids_app/views/home/sleep_goal_screen.dart' as sleep_goal;
@@ -92,6 +93,12 @@ class MyApp extends StatelessWidget {
           path: '/sleep-goals',
           builder: (context, state) =>
               MainLayout(child: sleep_goal.SleepGoalScreen())),
+      GoRoute(
+          path: '/icon-watch/:sleepId',
+          builder: (context, state) {
+            final sleepId = state.pathParameters['sleepId']!;
+            return MainLayout(child: SleepDataScreen(sleepId: sleepId));
+          }),
       GoRoute(
           path: '/achievement',
           builder: (context, state) => MainLayout(child: AchievementsScreen())),

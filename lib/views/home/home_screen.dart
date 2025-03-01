@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart'; // Import for AuthProvider
-import 'package:sleep_kids_app/core/providers/auth_provider.dart';
+import 'package:sleep_kids_app/core/providers/auth_provider.dart'; // Import for AuthProvider
 
-//import 'package:sleep_kids_app/views/home/sleep_tracking_screen.dart';
-//import 'package:sleep_kids_app/views/home/analytics_screen.dart';
-//import 'package:sleep_kids_app/views/home/bedtime_stories_screen.dart';
-//import 'package:sleep_kids_app/views/home/profile_screen.dart';
-//import 'package:sleep_kids_app/views/home/achievements_screen.dart';
+// Import other screens
+// import 'package:sleep_kids_app/views/home/sleep_tracking_screen.dart';
+// import 'package:sleep_kids_app/views/home/analytics_screen.dart';
+// import 'package:sleep_kids_app/views/home/bedtime_stories_screen.dart';
+// import 'package:sleep_kids_app/views/home/profile_screen.dart';
+// import 'package:sleep_kids_app/views/home/achievements_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,6 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String currentTime = '';
   final GlobalKey<ScaffoldState> _scaffoldKey =
       GlobalKey<ScaffoldState>(); // Added key for the Scaffold
+  bool isWatchConnected = false; // Track the watch connection status
 
   @override
   void initState() {
@@ -50,8 +52,10 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       key: _scaffoldKey, // Use the global key for Scaffold
       backgroundColor: Colors.transparent,
-      drawer:
-          CustomNavbar(authProvider: authProvider), // Custom navigation drawer
+      drawer: CustomNavbar(
+          authProvider: authProvider,
+          isWatchConnected: isWatchConnected,
+          onWatchToggle: _toggleWatchConnection), // Custom navigation drawer
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -114,12 +118,26 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+  // Toggle the watch connection status
+  void _toggleWatchConnection() {
+    setState(() {
+      isWatchConnected = !isWatchConnected;
+    });
+  }
 }
 
 class CustomNavbar extends StatelessWidget {
   final AuthProvider authProvider;
+  final bool isWatchConnected;
+  final VoidCallback onWatchToggle;
 
-  const CustomNavbar({Key? key, required this.authProvider}) : super(key: key);
+  const CustomNavbar({
+    Key? key,
+    required this.authProvider,
+    required this.isWatchConnected,
+    required this.onWatchToggle,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -182,6 +200,20 @@ class CustomNavbar extends StatelessWidget {
               title: Text('Profile', style: TextStyle(color: Colors.white)),
               onTap: () => context.go('/profile'),
             ),
+            ListTile(
+              title: Text(
+                'Connect Watch',
+                style: TextStyle(color: Colors.white),
+              ),
+              leading: Icon(
+                isWatchConnected
+                    ? Icons.sync
+                    : Icons
+                        .watch, // Conditional icon based on connection status
+                color: Colors.white,
+              ),
+              onTap: onWatchToggle, // Trigger the watch connection toggle
+            ),
             Divider(color: Colors.white70), // Adds a visual separator
 
             // New menu items added:
@@ -219,9 +251,11 @@ class CustomNavbar extends StatelessWidget {
 
             // Moved the logout here into the ListTile
             ListTile(
-              title: Text('Logout',
-                  style: TextStyle(
-                      color: Colors.redAccent, fontWeight: FontWeight.bold)),
+              title: Text(
+                'Logout',
+                style: TextStyle(
+                    color: Colors.redAccent, fontWeight: FontWeight.bold),
+              ),
               leading: Icon(Icons.logout, color: Colors.redAccent),
               onTap: () {
                 authProvider.logout(); // Call the logout function
