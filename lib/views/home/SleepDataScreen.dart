@@ -1,105 +1,194 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart'; // For formatting the Date and Time
-import 'package:sleep_kids_app/core/models/sleep_data_model.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class SleepDataScreen extends StatelessWidget {
-  final String
-      sleepId; // This will be passed to identify which sleep data to display
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await Firebase.initializeApp();
+    print("✅ Firebase initialized successfully!");
 
-  // Constructor to receive sleepId
+    // Sign in anonymously for testing
+    await FirebaseAuth.instance.signInAnonymously();
+    print("✅ User signed in anonymously!");
+  } catch (e) {
+    print("❌ Firebase initialization or sign-in error: $e");
+  }
+  runApp(MyApp());
+}
+
+void checkAuthStatus() {
+  var user = FirebaseAuth.instance.currentUser;
+  if (user != null) {
+    print("✅ User Authenticated: \${user.uid}");
+  } else {
+    print("❌ No authenticated user. Login required!");
+  }
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Sleep Kids App',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: SleepDataScreen(
+          sleepId:
+              'goRZJ8ykhqkTFynbeAKD'), // Use your provided Firestore ID here
+    );
+  }
+}
+
+class SleepDataScreen extends StatefulWidget {
+  final String sleepId;
+
   const SleepDataScreen({Key? key, required this.sleepId}) : super(key: key);
 
   @override
+  _SleepDataScreenState createState() => _SleepDataScreenState();
+}
+
+class _SleepDataScreenState extends State<SleepDataScreen> {
+  bool isConnected = false;
+  String sleepDataMessage = "Connecting...";
+  bool showData = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Simulate a connection delay
+    Future.delayed(Duration(seconds: 3), () {
+      setState(() {
+        isConnected = true;
+        sleepDataMessage = "Sleep Kids App Connected";
+        print("✅ Updated message: $sleepDataMessage");
+      });
+
+      // Fetch data manually to verify Firestore connection
+      fetchSleepData();
+    });
+  }
+
+  void toggleData() {
+    setState(() {
+      showData = !showData;
+    });
+  }
+
+  // Manual fetch for debugging
+  void fetchSleepData() async {
+    try {
+      DocumentSnapshot doc = await FirebaseFirestore.instance
+          .collection('Watch_Data')
+          .doc(widget.sleepId)
+          .get();
+
+      if (doc.exists) {
+        print("✅ Manual Fetch Data: ${doc.data()}");
+      } else {
+        print("🚫 Manual Fetch: No data found for ID: ${widget.sleepId}");
+      }
+    } catch (e) {
+      print("❌ Firestore Fetch Error: $e");
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Scaffold widget to build the screen
+    print("🛠 Current message: $sleepDataMessage");
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Sleep Data Details'),
+        title:
+            Text("Watch Data", style: TextStyle(fontWeight: FontWeight.bold)),
       ),
-      body: FutureBuilder<DocumentSnapshot>(
-        future: FirebaseFirestore.instance
-            .collection('sleepData')
-            .doc(sleepId) // Get document based on sleepId
-            .get(), // Fetch the data
-        builder: (context, snapshot) {
-          // Show loading indicator while waiting for data
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
-
-          // Show error if there's an issue with the request
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
-
-          // If no data is returned
-          if (!snapshot.hasData || !snapshot.data!.exists) {
-            return Center(child: Text('No sleep data found.'));
-          }
-
-          // Convert the document data into a SleepData object
-          SleepData sleepData = SleepData.fromDocument(snapshot.data!);
-
-          // Format the date and time
-          String formattedDate =
-              DateFormat('yyyy-MM-dd').format(sleepData.date);
-          String formattedBedtime =
-              DateFormat('hh:mm a').format(sleepData.bedtime);
-          String formattedWakeUpTime =
-              DateFormat('hh:mm a').format(sleepData.wakeUpTime);
-
-          // Display the data in a Column widget
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Child ID: ${sleepData.childId}',
-                  style: TextStyle(fontSize: 18),
-                ),
-                SizedBox(height: 10),
-                Text(
-                  'Date: $formattedDate',
-                  style: TextStyle(fontSize: 18),
-                ),
-                SizedBox(height: 10),
-                Text(
-                  'Bedtime: $formattedBedtime',
-                  style: TextStyle(fontSize: 18),
-                ),
-                SizedBox(height: 10),
-                Text(
-                  'Wake Up Time: $formattedWakeUpTime',
-                  style: TextStyle(fontSize: 18),
-                ),
-                SizedBox(height: 10),
-                Text(
-                  'Sleep Duration: ${sleepData.sleepDuration} minutes',
-                  style: TextStyle(fontSize: 18),
-                ),
-                SizedBox(height: 10),
-                Text(
-                  'Sleep Quality: ${sleepData.sleepQuality}/10',
-                  style: TextStyle(fontSize: 18),
-                ),
-                SizedBox(height: 10),
-                Text(
-                  'Notes: ${sleepData.notes}',
-                  style: TextStyle(fontSize: 18),
-                ),
-                SizedBox(height: 10),
-                if (sleepData.awakeningsId != null &&
-                    sleepData.awakeningsId!.isNotEmpty)
-                  Text(
-                    'Awakenings: ${sleepData.awakeningsId!.join(', ')}',
-                    style: TextStyle(fontSize: 18),
-                  ),
-              ],
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (isConnected)
+              Image.asset(
+                'assets/images/watch_icon.png', // Ensure this file exists
+                width: 200,
+                height: 250,
+              )
+            else
+              Icon(Icons.error_outline, size: 50, color: Colors.red),
+            SizedBox(height: 10),
+            Text(
+              sleepDataMessage,
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-          );
-        },
+            if (sleepDataMessage == "Sleep Kids App Connected") ...[
+              TextButton(
+                onPressed: toggleData,
+                child: Text(
+                  showData ? "Hide Sleep Data" : "Reveal Sleep Data",
+                  style: TextStyle(fontSize: 18, color: Colors.blue),
+                ),
+              ),
+            ],
+            if (showData)
+              StreamBuilder<DocumentSnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('Watch_Data')
+                    .doc(widget.sleepId)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  print(
+                      "📡 Firestore Stream Status: ${snapshot.connectionState}");
+
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    print("⏳ Waiting for data...");
+                    return CircularProgressIndicator();
+                  }
+                  if (snapshot.hasError) {
+                    print("❌ Firestore Error: ${snapshot.error}");
+                    return Text('Error: ${snapshot.error}');
+                  }
+                  if (!snapshot.hasData || !snapshot.data!.exists) {
+                    print("🚫 No data found for ID: ${widget.sleepId}");
+                    return Text('No sleep data available.');
+                  }
+
+                  var sleepData = snapshot.data!.data() as Map<String, dynamic>;
+                  print("📋 Fetched Sleep Data: $sleepData");
+
+                  // Convert Firestore Timestamps to DateTime
+                  DateTime bedtime =
+                      (sleepData['bedtime'] as Timestamp).toDate();
+                  DateTime wakeUpTime =
+                      (sleepData['wakeUpTime'] as Timestamp).toDate();
+
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Bedtime: ${bedtime.toString()}",
+                            style: TextStyle(fontSize: 16)),
+                        Text("Wake Up Time: ${wakeUpTime.toString()}",
+                            style: TextStyle(fontSize: 16)),
+                        Text(
+                            "Sleep Duration: ${sleepData['sleepDuration'] ?? 'Not available'} minutes",
+                            style: TextStyle(fontSize: 16)),
+                        Text(
+                            "Sleep Quality: ${sleepData['sleepQuality'] ?? 'Not available'}",
+                            style: TextStyle(fontSize: 16)),
+                        Text("Notes: ${sleepData['notes'] ?? 'Not available'}",
+                            style: TextStyle(fontSize: 16)),
+                        Text(
+                            "Awakenings: ${sleepData['awakenings']?.join(', ') ?? 'Not available'}",
+                            style: TextStyle(fontSize: 16)),
+                      ],
+                    ),
+                  );
+                },
+              ),
+          ],
+        ),
       ),
     );
   }

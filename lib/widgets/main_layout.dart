@@ -48,7 +48,7 @@ class _MainLayoutState extends State<MainLayout> {
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('nav_bg.jpg'),
+            image: AssetImage('assets/images/nav_bg.jpg'),
             fit: BoxFit.cover,
           ),
           boxShadow: [BoxShadow(blurRadius: 20, color: Colors.black45)],

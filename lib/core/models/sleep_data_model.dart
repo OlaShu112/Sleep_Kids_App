@@ -6,10 +6,11 @@ class SleepData {
   List<String>? awakeningsId;
   DateTime date;
   DateTime bedtime;
-  DateTime wakeUpTime;
+  DateTime wakeUpTime; // Ensure field name is consistent
   int sleepDuration; // in minutes
   int sleepQuality; // on a scale from 1 to 10
   String notes;
+  bool watchConnected; // New field to indicate if the watch is connected
 
   SleepData({
     required this.sleepId,
@@ -21,6 +22,7 @@ class SleepData {
     required this.sleepDuration,
     required this.sleepQuality,
     required this.notes,
+    required this.watchConnected, // Add the watch connection status
   });
 
   // Factory constructor from a DocumentSnapshot
@@ -34,11 +36,13 @@ class SleepData {
           ? List<String>.from(data['awakeningsId'])
           : null,
       bedtime: (data['bedtime'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      wakeUpTime:
-          (data['wakeUptime'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      wakeUpTime: (data['wakeUpTime'] as Timestamp?)?.toDate() ??
+          DateTime.now(), // Use 'wakeUpTime' for consistency
       sleepDuration: data['sleepDuration'] ?? 0,
       sleepQuality: data['sleepQuality'] ?? 0,
       notes: data['notes'] ?? '',
+      watchConnected:
+          data['watchConnected'] ?? false, // Default to false if not set
     );
   }
 
@@ -47,13 +51,17 @@ class SleepData {
     return SleepData(
       sleepId: sleepId ?? '',
       childId: map['child_id'] ?? '',
-      awakeningsId:map['awakeningsId'] ?? '',
+      awakeningsId: map['awakeningsId'] != null
+          ? List<String>.from(map['awakeningsId'])
+          : null,
       date: (map['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
       bedtime: (map['bedtime'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      wakeUpTime: (map['wakeUp'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      wakeUpTime: (map['wakeUpTime'] as Timestamp?)?.toDate() ??
+          DateTime.now(), // Consistent naming
       sleepDuration: map['sleepDuration'] ?? 0,
       sleepQuality: map['sleepQuality'] ?? 0,
       notes: map['notes'] ?? '',
+      watchConnected: map['watchConnected'] ?? false, // Default to false
     );
   }
 
@@ -66,6 +74,9 @@ class SleepData {
       'awakeningsId': awakeningsId ?? [],
       'sleepQuality': sleepQuality,
       'notes': notes,
+      'watchConnected': watchConnected, // Save watch connection status
+      'wakeUpTime':
+          Timestamp.fromDate(wakeUpTime), // Ensure consistency in field name
     };
   }
 }

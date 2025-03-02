@@ -4,8 +4,9 @@ buildscript {
         mavenCentral() // Add this
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.3.1' // ✅ Use latest Gradle version
-        classpath 'com.google.gms:google-services:4.4.2' // ✅ Ensure correct google-services version
+        classpath 'com.android.tools.build:gradle:8.3.0' // Use updated version
+        classpath 'com.google.gms:google-services:4.3.15' // Ensure latest version
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.0" // Update Kotlin version if necessary
     }
 }
 

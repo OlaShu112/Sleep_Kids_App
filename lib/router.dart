@@ -1,3 +1,6 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+
 import 'package:go_router/go_router.dart';
 import 'package:sleep_kids_app/views/auth/login_screen.dart';
 import 'package:sleep_kids_app/views/auth/signup_screen.dart';
@@ -41,6 +44,7 @@ final GoRouter router = GoRouter(
       path: '/analytics',
       builder: (context, state) => MainLayout(child: const AnalyticsScreen()),
     ),
+
     GoRoute(
       path: '/bedtime-stories',
       builder: (context, state) =>
