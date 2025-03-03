@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sleep_kids_app/core/models/issue_model.dart';
 import 'package:sleep_kids_app/services/firebase_service.dart';
 import 'package:sleep_kids_app/core/models/child_profile_model.dart';
 import 'package:intl/intl.dart';
@@ -25,19 +26,16 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
 
   bool isEditing = false;
   List<ChildProfile> children = [];
+  List<IssueModel> availableIssue = [];
   List<String> selectedIssues = []; // ✅ Store selected issues
 
-  final List<String> availableIssues = [
-    "Sleep Apnea",
-    "Insomnia",
-    "Night Terrors"
-  ]; // ✅ Issues list
 
   @override
   void initState() {
     super.initState();
     _fetchUserData();
     _fetchChildren();
+    _fetchIssues();
   }
 
   // 🔹 Fetch user data from Firestore
@@ -54,6 +52,14 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
       }
     }
   }
+
+void _fetchIssues() async {
+  List<IssueModel> fetchedIssues = await _firebaseService.fetchIssues();
+  setState(() {
+    availableIssue = fetchedIssues; 
+  });
+  print("✅ Issues Fetched: ${availableIssue.length}");
+}
 
   // 🔹 Fetch child profiles from Firestore
   void _fetchChildren() async {
@@ -115,15 +121,15 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
         childId: FirebaseFirestore.instance
             .collection('child_profiles')
             .doc()
-            .id, // ✅ Generate unique ID
+            .id, // Generate unique ID
         childName: _childNameController.text,
         issueId: selectedIssues.isNotEmpty
             ? selectedIssues
-            : [], // ✅ Store selected issues
+            : [], // store selected issues
         sleepId: [],
         dateOfBirth: _selectedDate!,
         profileImageUrl: "",
-        guardianId: user.uid,
+        guardianId: [user.uid],
       );
 
       await _firebaseService.addChildProfile(newChild);
@@ -209,18 +215,22 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
                 margin: EdgeInsets.only(bottom: 10),
                 child: Padding(
                   padding: EdgeInsets.all(10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
                     children: [
-                      Text("Child Name: ${child.childName}",
-                          style: TextStyle(fontWeight: FontWeight.bold)),
-                      Text(
-                          "DOB: ${DateFormat('yyyy-MM-dd').format(child.dateOfBirth)}"),
-                      Text(
-                        "Health Issues: ${child.issueId != null && child.issueId!.isNotEmpty ? child.issueId!.join(", ") : "None"}",
-                        style: TextStyle(
-                            color: Colors.redAccent,
-                            fontWeight: FontWeight.bold),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Child Name: ${child.childName}",
+                              style: TextStyle(fontWeight: FontWeight.bold)),
+                          Text(
+                              "DOB: ${DateFormat('yyyy-MM-dd').format(child.dateOfBirth)}"),
+                          Text(
+                            "Health Issues: ${child.issueId != null && child.issueId!.isNotEmpty ? child.issueId!.join(", ") : "None"}",
+                            style: TextStyle(
+                                color: Colors.redAccent,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -235,7 +245,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           SizedBox(height: 10),
 
-          // 🔹 Child Name Input
+          // Child Name Input
           TextField(
             controller: _childNameController,
             decoration: InputDecoration(
@@ -250,17 +260,17 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
 
           Wrap(
             spacing: 8.0,
-            children: availableIssues.map((issue) {
-              final isSelected = selectedIssues.contains(issue);
+            children: availableIssue.map((issue) {
+              final isSelected = selectedIssues.contains(issue.issueId);
               return ChoiceChip(
-                label: Text(issue),
+                label: Text(issue.issueContext),
                 selected: isSelected,
                 onSelected: (selected) {
                   setState(() {
                     if (selected && selectedIssues.length < 3) {
-                      selectedIssues.add(issue);
+                      selectedIssues.add(issue.issueId);
                     } else {
-                      selectedIssues.remove(issue);
+                      selectedIssues.remove(issue.issueId);
                     }
                   });
                 },
