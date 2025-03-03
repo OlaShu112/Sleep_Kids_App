@@ -36,4 +36,34 @@ class AuthService {
     }
     return null;
   }
+
+  // 🔹 Update Password with Re-authentication
+  Future<void> updatePassword(String currentPassword, String newPassword) async {
+    try {
+      User? user = _auth.currentUser;
+      if (user == null) throw Exception("No user is logged in.");
+
+      // ✅ Step 1: Re-authenticate user
+      AuthCredential credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: currentPassword,
+      );
+      await user.reauthenticateWithCredential(credential);
+
+      // ✅ Step 2: Update Password
+      await user.updatePassword(newPassword);
+
+      print("✅ Password updated successfully!");
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'wrong-password') {
+        throw Exception("Current password is incorrect.");
+      } else if (e.code == 'weak-password') {
+        throw Exception("New password is too weak.");
+      } else if (e.code == 'requires-recent-login') {
+        throw Exception("Please log out and log in again before changing your password.");
+      } else {
+        throw Exception("An error occurred while changing the password.");
+      }
+    }
+  }
 }

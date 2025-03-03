@@ -18,12 +18,15 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:sleep_kids_app/core/models/goals_model.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // ✅ Import FirebaseAuth
 import 'package:sleep_kids_app/core/models/user_model.dart';
 import 'package:sleep_kids_app/core/models/child_profile_model.dart';
 
 
 class FirebaseService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+    final FirebaseAuth _auth = FirebaseAuth.instance; // ✅ Define _auth here
+
 
   // Insert User
   Future<void> insertUser(UserModel user) async {
@@ -111,100 +114,34 @@ Future<void> addGoal(Goal NewGoal) async {
     }
   }
 
+ // 🔹 Change user password
+  Future<void> changeUserPassword(String currentPassword, String newPassword) async {
+    try {
+      User? user = _auth.currentUser;
+      if (user == null) throw Exception("No user is logged in.");
+
+      // ✅ Step 1: Re-authenticate user
+      AuthCredential credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: currentPassword,
+      );
+
+      await user.reauthenticateWithCredential(credential);
+
+      // ✅ Step 2: Update Password
+      await user.updatePassword(newPassword);
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'wrong-password') {
+        throw Exception("Current password is incorrect.");
+      } else if (e.code == 'weak-password') {
+        throw Exception("New password is too weak.");
+      } else if (e.code == 'requires-recent-login') {
+        throw Exception("Please log out and log in again before changing your password.");
+      } else {
+        throw Exception("An error occurred while changing the password.");
+      }
+    }
+  }
+
 
 }
-
-
-
-  
-
-//   // Insert Admin
-//   Future<void> insertAdmin(String userId, String position, String accessLevel) async {
-//     await _db.collection("admins").add({
-//       "user_id": userId,
-//       "position": position,
-//       "access_level": accessLevel,
-//       "created_at": Timestamp.now(),
-//     });
-//   }
-
-//   // Insert Child
-//   Future<void> insertChild(String userId, String name, int age, String gender) async {
-//     await _db.collection("children").add({
-//       "user_id": userId,
-//       "name": name,
-//       "age": age,
-//       "gender": gender,
-//       "created_at": Timestamp.now(),
-//     });
-//   }
-
-//   // Insert Sleep Tracking Record
-//   Future<void> insertSleepTracking(String childId, DateTime startTime, int settleDuration, int awakeningsCount, int awakeDuration, DateTime wakeTime) async {
-//     await _db.collection("sleep_tracking").add({
-//       "child_id": childId,
-//       "start_time": startTime,
-//       "settle_duration": settleDuration,
-//       "awakenings_count": awakeningsCount,
-//       "awake_duration": awakeDuration,
-//       "wake_time": wakeTime,
-//       "created_at": Timestamp.now(),
-//     });
-//   }
-
-//   // Insert Sleep Plan
-//   Future<void> insertSleepPlan(String childId, String details, DateTime startDate, DateTime? endDate, String status) async {
-//     await _db.collection("sleep_plans").add({
-//       "child_id": childId,
-//       "details": details,
-//       "start_date": startDate,
-//       "end_date": endDate,
-//       "status": status,
-//       "created_at": Timestamp.now(),
-//     });
-//   }
-
-//   // Insert Gamification Record
-//   Future<void> insertGamification(String childId, int points, String? badge, String challengeStatus) async {
-//     await _db.collection("gamification").add({
-//       "child_id": childId,
-//       "points": points,
-//       "badge": badge,
-//       "challenge_status": challengeStatus,
-//       "created_at": Timestamp.now(),
-//     });
-//   }
-
-//   // Insert Educational Content
-//   Future<void> insertEducationalContent(String title, String contentType, String contentUrl, String category) async {
-//     await _db.collection("educational_content").add({
-//       "title": title,
-//       "content_type": contentType,
-//       "content_url": contentUrl,
-//       "category": category,
-//       "created_at": Timestamp.now(),
-//     });
-//   }
-
-//   // Insert Alert Notification
-//   Future<void> insertAlertNotification(String userId, String message, String type) async {
-//     await _db.collection("alerts_notifications").add({
-//       "user_id": userId,
-//       "message": message,
-//       "type": type,
-//       "created_at": Timestamp.now(),
-//     });
-//   }
-
-//   // Insert Progress Tracking Record
-//   Future<void> insertProgressTracking(String childId, DateTime reportDate, double sleepHours, String moodAssessment, double goalAchievementRate) async {
-//     await _db.collection("progress_tracking").add({
-//       "child_id": childId,
-//       "report_date": reportDate,
-//       "sleep_hours": sleepHours,
-//       "mood_assessment": moodAssessment,
-//       "goal_achievement_rate": goalAchievementRate,
-//       "created_at": Timestamp.now(),
-//     });
-//   }
-// }

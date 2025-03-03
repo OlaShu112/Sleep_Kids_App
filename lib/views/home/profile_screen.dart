@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:sleep_kids_app/views/home/change_password.dart';
 import 'package:sleep_kids_app/views/home/personal_information_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -106,7 +107,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             description: "Update your password for better account security.",
             icon: Icons.lock_outline,
             onTap: () {
-              _changePassword();
+              Navigator.push(
+                context, 
+                MaterialPageRoute(builder: (context) => ChangePassword())
+              );
             },
           ),
           _buildProfileCard(
