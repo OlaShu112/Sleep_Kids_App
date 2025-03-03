@@ -10,7 +10,7 @@ class ChildProfile {
   DateTime dateOfBirth;
   String? profileImageUrl;
 
-  String guardianId;
+  List<String> guardianId;
 
   ChildProfile({
     required this.childId,

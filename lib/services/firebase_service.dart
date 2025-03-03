@@ -23,6 +23,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:sleep_kids_app/core/models/goals_model.dart';
 import 'package:sleep_kids_app/core/models/user_model.dart';
 import 'package:sleep_kids_app/core/models/child_profile_model.dart';
+import 'package:sleep_kids_app/core/models/issue_model.dart';
 
 class FirebaseService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -177,4 +178,17 @@ class FirebaseService {
       print("❌ Error updating profile image URL: $e");
     }
   }
+
+  Future<List<IssueModel>> fetchIssues() async {
+  try {
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('Issue') 
+        .get();
+
+    return querySnapshot.docs.map((doc) => IssueModel.fromDocument(doc)).toList();
+  } catch (e) {
+    print("❌ Error Fetching Issues: $e");
+    return [];
+  }
+}
 }
