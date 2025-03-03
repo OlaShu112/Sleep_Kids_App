@@ -64,6 +64,10 @@ class FirebaseService {
       print("❌ Error Adding Child Profile: $e");
     }
   }
+  Future<void> removeChildProfile(String childId) async {
+  await FirebaseFirestore.instance.collection('child_profiles').doc(childId).delete();
+}
+
 
   // Get Child Profile by Guardian ID
   Future<List<ChildProfile>> getChildProfiles(String guardianId) async {

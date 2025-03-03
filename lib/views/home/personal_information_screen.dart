@@ -145,6 +145,23 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
     }
   }
 
+  // 🔹 Remove Child Profile
+  void _removeChild(String childId) async {
+    try {
+      await _firebaseService.removeChildProfile(childId);
+      _fetchChildren(); // Refresh the list after deletion
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Child Removed Successfully!")),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error removing child!")),
+      );
+    }
+  }
+  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -209,18 +226,26 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
                 margin: EdgeInsets.only(bottom: 10),
                 child: Padding(
                   padding: EdgeInsets.all(10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
                     children: [
-                      Text("Child Name: ${child.childName}",
-                          style: TextStyle(fontWeight: FontWeight.bold)),
-                      Text(
-                          "DOB: ${DateFormat('yyyy-MM-dd').format(child.dateOfBirth)}"),
-                      Text(
-                        "Health Issues: ${child.issueId != null && child.issueId!.isNotEmpty ? child.issueId!.join(", ") : "None"}",
-                        style: TextStyle(
-                            color: Colors.redAccent,
-                            fontWeight: FontWeight.bold),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Child Name: ${child.childName}",
+                              style: TextStyle(fontWeight: FontWeight.bold)),
+                          Text(
+                              "DOB: ${DateFormat('yyyy-MM-dd').format(child.dateOfBirth)}"),
+                          Text(
+                            "Health Issues: ${child.issueId != null && child.issueId!.isNotEmpty ? child.issueId!.join(", ") : "None"}",
+                            style: TextStyle(
+                                color: Colors.redAccent,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          IconButton(
+                          icon: Icon(Icons.delete, color: Colors.red),
+                          onPressed: () => _removeChild(child.childId),
+                        ),
+                        ],
                       ),
                     ],
                   ),
