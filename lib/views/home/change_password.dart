@@ -19,55 +19,52 @@ class _ChangePasswordState extends State<ChangePassword> {
 
   // 🔹 Function to change password
   Future<void> _changePassword() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      User? user = _auth.currentUser;
-      if (user == null) {
-        throw Exception("No user is logged in.");
-      }
-
-      // 🔹 Re-authenticate user before changing password
-      AuthCredential credential = EmailAuthProvider.credential(
-        email: user.email!,
-        password: _currentPasswordController.text,
-      );
-
-      await user.reauthenticateWithCredential(credential);
-
-      // 🔹 Change password
-      await user.updatePassword(_newPasswordController.text);
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Password changed successfully!")),
-      );
-
-      // Clear fields
-      _currentPasswordController.clear();
-      _newPasswordController.clear();
-      _confirmPasswordController.clear();
-    } on FirebaseAuthException catch (e) {
-      String errorMsg = "An error occurred.";
-      if (e.code == 'wrong-password') {
-        errorMsg = "Current password is incorrect.";
-      } else if (e.code == 'weak-password') {
-        errorMsg = "New password is too weak.";
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMsg)),
-      );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
+  if (!_formKey.currentState!.validate()) {
+    return;
   }
+
+  setState(() {
+    _isLoading = true;
+  });
+
+  try {
+    User? user = _auth.currentUser;
+    if (user == null) throw Exception("No user is logged in.");
+
+    // 🔹 Step 1: Reauthenticate user
+    AuthCredential credential = EmailAuthProvider.credential(
+      email: user.email!,
+      password: _currentPasswordController.text,
+    );
+
+    await user.reauthenticateWithCredential(credential);
+
+    // 🔹 Step 2: Update Password
+    await user.updatePassword(_newPasswordController.text);
+
+    // 🔹 Step 3: Force Logout and Ask User to Log In Again
+    await _auth.signOut();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Password changed successfully! Please log in again.")),
+    );
+
+    Navigator.pop(context); // Go back to previous screen
+  } on FirebaseAuthException catch (e) {
+    String errorMsg = "An error occurred.";
+    if (e.code == 'wrong-password') {
+      errorMsg = "Current password is incorrect.";
+    } else if (e.code == 'weak-password') {
+      errorMsg = "New password is too weak.";
+    }
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(errorMsg)),
+    );
+  } finally {
+    setState(() {
+      _isLoading = false;
+    });
+  }
+}
 
   @override
   Widget build(BuildContext context) {
