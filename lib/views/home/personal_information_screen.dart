@@ -63,15 +63,24 @@ void _fetchIssues() async {
 
   // 🔹 Fetch child profiles from Firestore
   void _fetchChildren() async {
-    User? user = _auth.currentUser;
-    if (user != null) {
-      List<ChildProfile> fetchedChildren =
-          await _firebaseService.getChildProfiles(user.uid);
-      setState(() {
-        children = fetchedChildren;
-      });
+  User? user = _auth.currentUser;
+  if (user != null) {
+    print("🚀 Fetching children for user: ${user.uid}");
+    
+    List<ChildProfile> fetchedChildren = await _firebaseService.getChildProfiles(user.uid);
+
+    setState(() {
+      children = fetchedChildren;
+    });
+
+    if (fetchedChildren.isEmpty) {
+      print("❌ No children found.");
+    } else {
+      print("✅ Successfully fetched ${fetchedChildren.length} children.");
     }
   }
+}
+
 
   // 🔹 Save updated user data
   void _saveUserData() async {
@@ -133,7 +142,7 @@ void _fetchIssues() async {
       );
 
       await _firebaseService.addChildProfile(newChild);
-      _fetchChildren(); // Refresh the list
+      _fetchChildren(); // Refresh the listr
 
       _childNameController.clear();
       setState(() {
@@ -226,40 +235,51 @@ void _fetchIssues() async {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           SizedBox(height: 10),
 
-          Column(
-            children: children.map((child) {
-              return Card(
-                margin: EdgeInsets.only(bottom: 10),
-                child: Padding(
-                  padding: EdgeInsets.all(10),
-                  child: Row(
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("Child Name: ${child.childName}",
-                              style: TextStyle(fontWeight: FontWeight.bold)),
-                          Text(
-                              "DOB: ${DateFormat('yyyy-MM-dd').format(child.dateOfBirth)}"),
-                          Text(
-                            "Health Issues: ${child.issueId != null && child.issueId!.isNotEmpty ? child.issueId!.join(", ") : "None"}",
-                            style: TextStyle(
-                                color: Colors.redAccent,
-                                fontWeight: FontWeight.bold),
-                          ),
-                          IconButton(
-                          icon: Icon(Icons.delete, color: Colors.red),
-                          onPressed: () => _removeChild(child.childId),
-                        ),
+Column(
+  children: children.isNotEmpty 
+      ? children.map((child) {
+          print("✅ Displaying Child: ${child.childName}"); // 🔹 Debugging
 
-                        ],
+          // Convert Issue ID to IssueContext
+          List<String> issueNames = child.issueId != null && child.issueId!.isNotEmpty
+              ? child.issueId!.map((id) => 
+                  availableIssue.firstWhere(
+                    (issue) => issue.issueId == id,
+                    orElse: () => IssueModel(issueId: '', issueContext: 'Unknown Issue', solution: ''),
+                  ).issueContext
+                ).toList()
+              : [];
+
+          return Card(
+            margin: EdgeInsets.only(bottom: 10),
+            child: Padding(
+              padding: EdgeInsets.all(10),
+              child: Row(
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("Child Name: ${child.childName}",
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      Text(
+                          "DOB: ${DateFormat('yyyy-MM-dd').format(child.dateOfBirth)}"),
+                      Text(
+                        "Health Issues: ${issueNames.isNotEmpty ? issueNames.join(", ") : "None"}",
+                        style: TextStyle(
+                            color: Colors.redAccent,
+                            fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
-                ),
-              );
-            }).toList(),
-          ),
+                ],
+              ),
+            ),
+          );
+        }).toList()
+      : [Text("❌ No children found", style: TextStyle(color: Colors.red))], // Show message if empty
+),
+
+
 
           SizedBox(height: 20),
 
