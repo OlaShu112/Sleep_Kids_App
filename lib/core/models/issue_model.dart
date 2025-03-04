@@ -14,13 +14,15 @@ class IssueModel {
     final data = doc.data() as Map<String, dynamic>;
     return IssueModel(
         issueId: doc.id,
-        issueContext: data['issueCntext'],
+        issueContext: data['IssueContext'],
         solution: data['solution']);
   }
 
+  
+
   Map<String, dynamic> toMap() {
     return {
-      'issueContext': issueContext,
+      'IssueContext': issueContext,
       'solutionId' : solution,
     };
   }
