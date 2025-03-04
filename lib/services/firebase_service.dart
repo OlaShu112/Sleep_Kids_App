@@ -72,26 +72,38 @@ class FirebaseService {
 
   // Get Child Profile by Guardian ID
   Future<List<ChildProfile>> getChildProfiles(String guardianId) async {
-    try {
-      QuerySnapshot querySnapshot = await _db
-          .collection('child_profiles')
-          .where('guardianId', isEqualTo: guardianId)
-          .get();
+  try {
+    print("🚀 Fetching child profiles for guardianId: $guardianId");
 
-      return querySnapshot.docs
-          .map((doc) => ChildProfile.fromDocument(doc))
-          .toList();
-    } catch (e) {
-      print("❌ Error Fetching Child Profiles: $e");
-      return [];
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('child_profiles')
+        .where('guardianId', arrayContains: guardianId) // ✅ Ensuring arrayContains
+        .get();
+
+    if (querySnapshot.docs.isEmpty) {
+      print("❌ No children found in Firestore.");
+    } else {
+      print("✅ Firestore returned ${querySnapshot.docs.length} children.");
+      for (var doc in querySnapshot.docs) {
+        print("👶 Found child: ${doc['childName']} (ID: ${doc.id})");
+      }
     }
+
+    return querySnapshot.docs
+        .map((doc) => ChildProfile.fromDocument(doc))
+        .toList();
+  } catch (e) {
+    print("❌ Error Fetching Child Profiles: $e");
+    return [];
   }
+}
+
 
   // Fetch all children linked to the current user
   Stream<QuerySnapshot> fetchChildren(String guardianId) {
     return _db
         .collection('child_profiles')
-        .where('guardianId', isEqualTo: guardianId)
+        .where('guardianId', arrayContains: guardianId)
         .snapshots();
   }
 

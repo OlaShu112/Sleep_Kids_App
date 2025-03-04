@@ -9,7 +9,6 @@ class ChildProfile {
   List<String>? awakeningsId;
   DateTime dateOfBirth;
   String? profileImageUrl;
-
   List<String> guardianId;
 
   ChildProfile({
@@ -36,7 +35,7 @@ class ChildProfile {
       awakeningsId: _getListFromField(data['awakeningsId']),
       dateOfBirth: _getDateFromField(data['dateOfBirth']),
       profileImageUrl: data['profileImageUrl'],
-      guardianId: data['guardianId'] ?? '',
+      guardianId: data['guardianId'] != null ? List<String>.from(data['guardianId']): [],
     );
   }
 
@@ -78,7 +77,7 @@ class ChildProfile {
       'awakeningsId': awakeningsId ?? [], // Fixed this line
       'dateOfBirth': Timestamp.fromDate(dateOfBirth),
       'profileImageUrl': profileImageUrl ?? '',
-      'guardianId': guardianId,
+      'guardianId': guardianId ?? [],
     };
   }
 }
