@@ -18,12 +18,10 @@ class IssueModel {
         solution: data['solution']);
   }
 
-  
-
   Map<String, dynamic> toMap() {
     return {
       'IssueContext': issueContext,
-      'solutionId' : solution,
+      'solutionId': solution,
     };
   }
 }
