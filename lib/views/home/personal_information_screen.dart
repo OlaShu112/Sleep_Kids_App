@@ -269,6 +269,10 @@ Column(
                             color: Colors.redAccent,
                             fontWeight: FontWeight.bold),
                       ),
+                      IconButton(
+                          icon: Icon(Icons.delete, color: Colors.red),
+                          onPressed: () => _removeChild(child.childId),
+                      ),
                     ],
                   ),
                 ],
