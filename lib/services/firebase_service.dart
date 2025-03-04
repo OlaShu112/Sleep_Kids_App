@@ -22,6 +22,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:sleep_kids_app/core/models/goals_model.dart';
 import 'package:sleep_kids_app/core/models/user_model.dart';
 import 'package:sleep_kids_app/core/models/child_profile_model.dart';
+import 'package:sleep_kids_app/core/models/issue_model.dart';
 
 class FirebaseService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -88,6 +89,22 @@ class FirebaseService {
     } catch (e) {
       print("❌ Error Fetching Child Profiles: $e");
       return [];
+    }
+  }
+
+  // Fetch all issues from Firestore
+  Future<List<IssueModel>> fetchIssues() async {
+    try {
+      // Query the Firestore collection 'issues' to get all issue documents
+      QuerySnapshot querySnapshot = await _db.collection('issues').get();
+
+      // Convert each document to an IssueModel and return the list
+      return querySnapshot.docs
+          .map((doc) => IssueModel.fromDocument(doc))
+          .toList();
+    } catch (e) {
+      print("❌ Error fetching issues: $e");
+      return []; // Return an empty list in case of error
     }
   }
 
