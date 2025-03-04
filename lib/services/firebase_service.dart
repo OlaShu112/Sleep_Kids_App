@@ -70,6 +70,37 @@ class FirebaseService {
 }
 
 
+
+
+
+Future<List<IssueModel>> getChildIssues(List<String> issueIds) async {
+  try {
+    if (issueIds.isEmpty) {
+      print("❌ No issues linked to this child.");
+      return [];
+    }
+
+    print("🚀 Fetching Issues: ${issueIds.join(', ')}");
+
+    QuerySnapshot querySnapshot = await _db
+        .collection('Issue')
+        .where(FieldPath.documentId, whereIn: issueIds) // ✅ Fetch issues by ID
+        .get();
+
+    print("✅ Firestore returned ${querySnapshot.docs.length} issues.");
+    return querySnapshot.docs
+        .map((doc) => IssueModel.fromDocument(doc))
+        .toList();
+  } catch (e) {
+    print("❌ Error Fetching Issues: $e");
+    return [];
+  }
+}
+
+
+
+
+
   // Get Child Profile by Guardian ID
   Future<List<ChildProfile>> getChildProfiles(String guardianId) async {
   try {
