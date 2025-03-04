@@ -151,6 +151,23 @@ void _fetchIssues() async {
     }
   }
 
+  // 🔹 Remove Child Profile
+  void _removeChild(String childId) async {
+    try {
+      await _firebaseService.removeChildProfile(childId);
+      _fetchChildren(); // Refresh the list after deletion
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Child Removed Successfully!")),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error removing child!")),
+      );
+    }
+  }
+  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -230,6 +247,11 @@ void _fetchIssues() async {
                                 color: Colors.redAccent,
                                 fontWeight: FontWeight.bold),
                           ),
+                          IconButton(
+                          icon: Icon(Icons.delete, color: Colors.red),
+                          onPressed: () => _removeChild(child.childId),
+                        ),
+
                         ],
                       ),
                     ],
