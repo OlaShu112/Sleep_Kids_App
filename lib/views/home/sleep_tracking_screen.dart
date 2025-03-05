@@ -7,7 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
 import 'dart:async';
-import 'package:intl/intl.dart';
+//import 'package:intl/intl.dart';
 
 class SleepTrackingScreen extends StatefulWidget {
   const SleepTrackingScreen({super.key});
@@ -297,7 +297,7 @@ class _SleepTrackingScreenState extends State<SleepTrackingScreen> {
               ),
               const SizedBox(height: 16),
               Text("Name: ${child.childName}"),
-              Text("Date of Birth: ${child.dateOfBirth ?? 'N/A'}"),
+              Text("Date of Birth: ${child.dateOfBirth}"),
               Text("Health Issues: ${child.issueId ?? 'None'}"),
             ],
           ),

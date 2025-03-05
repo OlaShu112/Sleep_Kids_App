@@ -15,7 +15,7 @@
 // It does not manage authentication (login/logout).
 // It does not handle UI state updates.
 
-import 'dart:io';
+//import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -26,8 +26,8 @@ import 'package:sleep_kids_app/core/models/issue_model.dart';
 
 class FirebaseService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseStorage _storage =
+  final FirebaseAuth auth = FirebaseAuth.instance;
+  final FirebaseStorage storage =
       FirebaseStorage.instance; // ✅ Firebase Storage instance
 
   // Insert User

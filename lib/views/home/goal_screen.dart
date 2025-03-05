@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:sleep_kids_app/core/models/goals_model.dart';
+//import 'package:sleep_kids_app/core/models/goals_model.dart';
 import 'package:sleep_kids_app/services/firebase_service.dart';
 
 class GoalScreen extends StatefulWidget {
@@ -11,11 +11,12 @@ class GoalScreen extends StatefulWidget {
   _GoalScreenState createState() => _GoalScreenState();
 }
 
-class _GoalScreenState extends State<GoalScreen> with SingleTickerProviderStateMixin {
+class _GoalScreenState extends State<GoalScreen>
+    with SingleTickerProviderStateMixin {
   final FirebaseService _firebaseService = FirebaseService();
   String? currentUserId;
   late AnimationController _animationController;
-  late Animation<Offset> _offsetAnimation;
+  late Animation<Offset> offsetAnimation;
 
   final TextEditingController _goalWakeUpController = TextEditingController();
   final TextEditingController _goalBedTimeController = TextEditingController();
@@ -32,7 +33,7 @@ class _GoalScreenState extends State<GoalScreen> with SingleTickerProviderStateM
       duration: const Duration(milliseconds: 500),
     );
 
-    _offsetAnimation = Tween<Offset>(
+    offsetAnimation = Tween<Offset>(
       begin: const Offset(0, 1),
       end: Offset.zero,
     ).animate(
@@ -57,7 +58,8 @@ class _GoalScreenState extends State<GoalScreen> with SingleTickerProviderStateM
 
   // Save or Update Goal Data in Firestore
   void _saveGoalData(String childId) async {
-    if (_goalWakeUpController.text.isEmpty || _goalBedTimeController.text.isEmpty) {
+    if (_goalWakeUpController.text.isEmpty ||
+        _goalBedTimeController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please fill in all required fields!")),
       );
@@ -107,8 +109,8 @@ class _GoalScreenState extends State<GoalScreen> with SingleTickerProviderStateM
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            
-            const Text("Add Goal", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const Text("Add Goal",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
             TextField(
               controller: _goalBedTimeController,
@@ -132,9 +134,11 @@ class _GoalScreenState extends State<GoalScreen> with SingleTickerProviderStateM
               onPressed: () => _saveGoalData(childId),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
               ),
-              child: const Text("Save Goal", style: TextStyle(color: Colors.white)),
+              child: const Text("Save Goal",
+                  style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -147,9 +151,9 @@ class _GoalScreenState extends State<GoalScreen> with SingleTickerProviderStateM
     return Scaffold(
       appBar: AppBar(title: const Text("Sleep Goals")),
       body: currentUserId == null
-          ? const Center(child: CircularProgressIndicator()) 
+          ? const Center(child: CircularProgressIndicator())
           : StreamBuilder<QuerySnapshot>(
-              stream: _firebaseService.fetchChildren(currentUserId!), 
+              stream: _firebaseService.fetchChildren(currentUserId!),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -164,7 +168,8 @@ class _GoalScreenState extends State<GoalScreen> with SingleTickerProviderStateM
                 return ListView.separated(
                   padding: const EdgeInsets.all(16),
                   itemCount: children.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 10),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 10),
                   itemBuilder: (context, index) {
                     final childData = children[index];
                     final String childId = childData.id;
@@ -199,9 +204,11 @@ class _GoalScreenState extends State<GoalScreen> with SingleTickerProviderStateM
                               onPressed: () => _showAddGoalScreen(childId),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.green,
-                                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 32, vertical: 12),
                               ),
-                              child: const Text("Add Goal", style: TextStyle(color: Colors.white)),
+                              child: const Text("Add Goal",
+                                  style: TextStyle(color: Colors.white)),
                             ),
                           ),
                         ],

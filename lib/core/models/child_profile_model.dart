@@ -35,7 +35,9 @@ class ChildProfile {
       awakeningsId: _getListFromField(data['awakeningsId']),
       dateOfBirth: _getDateFromField(data['dateOfBirth']),
       profileImageUrl: data['profileImageUrl'],
-      guardianId: data['guardianId'] != null ? List<String>.from(data['guardianId']): [],
+      guardianId: data['guardianId'] != null
+          ? List<String>.from(data['guardianId'])
+          : [],
     );
   }
 
