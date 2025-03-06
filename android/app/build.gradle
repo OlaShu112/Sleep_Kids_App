@@ -12,12 +12,12 @@ android {
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = "17"
     }
 
     defaultConfig {
@@ -45,4 +45,8 @@ flutter {
 }
 dependencies{
     implementation platform('com.google.firebase:firebase-bom:33.9.0')
+    // Add the required Firebase or Play Services dependencies
+    implementation 'com.google.firebase:firebase-auth' // Firebase Auth (latest version managed by BOM)
+    implementation 'com.google.firebase:firebase-firestore' // Firestore (latest version managed by BOM)
+    implementation 'com.google.android.gms:play-services-auth:20.0.1' // For Google Sign-in, if required
 }

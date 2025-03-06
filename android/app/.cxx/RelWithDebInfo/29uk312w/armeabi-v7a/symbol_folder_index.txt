@@ -1,0 +1,1 @@
+C:\xampp\htdocs\elarosgroup\Sleep_Kids_App\build\app\intermediates\cxx\RelWithDebInfo\29uk312w\obj\armeabi-v7a

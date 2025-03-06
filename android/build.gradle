@@ -1,12 +1,13 @@
+// Root project build.gradle (android/build.gradle)
 buildscript {
     repositories {
-        google() // Add this
-        mavenCentral() // Add this
+        google()  // Required for Android dependencies
+        mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.3.0' // Use updated version
-        classpath 'com.google.gms:google-services:4.3.15' // Ensure latest version
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.0" // Update Kotlin version if necessary
+        classpath 'com.android.tools.build:gradle:7.4.2'  // Ensure compatibility with Flutter
+        classpath 'com.google.gms:google-services:4.3.15'  // Ensure latest version of Google Services plugin
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.20"  // Updated Kotlin version
     }
 }
 
@@ -21,9 +22,6 @@ rootProject.buildDir = "../build"
 
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
-}
-
-subprojects {
     project.evaluationDependsOn(":app")
 }
 
