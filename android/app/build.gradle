@@ -32,8 +32,13 @@ android {
 
     buildTypes {
         release {
-            // Add your own signing config for the release build.
-            signingConfig = signingConfigs.debug
+            minifyEnabled true
+            shrinkResources true
+            // ✅ Use the default debug signing (REMOVE signingConfigs.release)
+            signingConfig signingConfigs.debug
+        }
+        debug {
+            signingConfig signingConfigs.debug
         }
     }
 }

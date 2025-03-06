@@ -5,9 +5,9 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.4.2'  // Ensure compatibility with Flutter
+        classpath 'com.android.tools.build:gradle:8.2.0'  // Ensure compatibility with Flutter
         classpath 'com.google.gms:google-services:4.3.15'  // Ensure latest version of Google Services plugin
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.20"  // Updated Kotlin version
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.0"  // Updated Kotlin version
     }
 }
 
