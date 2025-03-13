@@ -182,9 +182,9 @@ class _SleepTrackingScreenState extends State<SleepTrackingScreen> {
   }
 
   Future<void> _showAddChildDialog(BuildContext context) async {
-    final TextEditingController _nameController = TextEditingController();
-    final TextEditingController _dobController = TextEditingController();
-    final TextEditingController _healthIssuesController =
+    final TextEditingController nameController = TextEditingController();
+    final TextEditingController dobController = TextEditingController();
+    final TextEditingController healthIssuesController =
         TextEditingController();
 
     showDialog(
@@ -196,16 +196,16 @@ class _SleepTrackingScreenState extends State<SleepTrackingScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
-                controller: _nameController,
+                controller: nameController,
                 decoration: const InputDecoration(labelText: "Child's Name"),
               ),
               TextField(
-                controller: _dobController,
+                controller: dobController,
                 decoration: const InputDecoration(
                     labelText: "Date of Birth (yyyy-mm-dd)"),
               ),
               TextField(
-                controller: _healthIssuesController,
+                controller: healthIssuesController,
                 decoration: const InputDecoration(
                     labelText: "Health Issues (Optional)"),
               ),
@@ -230,9 +230,9 @@ class _SleepTrackingScreenState extends State<SleepTrackingScreen> {
           actions: [
             TextButton(
               onPressed: () async {
-                final String name = _nameController.text;
-                final String dob = _dobController.text;
-                final String healthIssues = _healthIssuesController.text;
+                final String name = nameController.text;
+                final String dob = dobController.text;
+                final String healthIssues = healthIssuesController.text;
 
                 if (name.isNotEmpty) {
                   try {

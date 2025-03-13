@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:sleep_kids_app/ult/tinderCard.dart';
 
 class BedtimeStoriesScreen extends StatefulWidget {
-  const BedtimeStoriesScreen({Key? key}) : super(key: key);
+  const BedtimeStoriesScreen({super.key});
 
   @override
   _BedtimeStoriesScreenState createState() => _BedtimeStoriesScreenState();

@@ -5,7 +5,7 @@ import 'package:sleep_kids_app/core/models/goals_model.dart';
 import 'package:sleep_kids_app/services/firebase_service.dart';
 
 class GoalScreen extends StatefulWidget {
-  const GoalScreen({Key? key}) : super(key: key);
+  const GoalScreen({super.key});
 
   @override
   _GoalScreenState createState() => _GoalScreenState();

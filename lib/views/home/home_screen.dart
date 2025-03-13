@@ -133,11 +133,11 @@ class CustomNavbar extends StatelessWidget {
   final VoidCallback onWatchToggle;
 
   const CustomNavbar({
-    Key? key,
+    super.key,
     required this.authProvider,
     required this.isWatchConnected,
     required this.onWatchToggle,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

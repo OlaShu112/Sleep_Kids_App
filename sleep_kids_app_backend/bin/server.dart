@@ -26,7 +26,7 @@ void main() async {
   var handler = Pipeline()
       .addMiddleware(logRequests()) // Logs incoming requests for debugging
       .addMiddleware(corsHeaders()) // Enable CORS headers
-      .addHandler(app);
+      .addHandler(app.call);
 
   // Define API routes
   app.get('/', (Request request) {

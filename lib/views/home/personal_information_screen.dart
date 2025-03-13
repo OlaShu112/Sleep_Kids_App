@@ -7,7 +7,7 @@ import 'package:sleep_kids_app/core/models/child_profile_model.dart';
 import 'package:intl/intl.dart';
 
 class PersonalInformationScreen extends StatefulWidget {
-  const PersonalInformationScreen({Key? key}) : super(key: key);
+  const PersonalInformationScreen({super.key});
 
   @override
   _PersonalInformationScreenState createState() =>

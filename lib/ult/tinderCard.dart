@@ -16,7 +16,7 @@ class Tindercard {
 class TindercardView extends StatelessWidget {
   final List<Tindercard> stories; // ✅ Accept stories as a parameter
 
-  const TindercardView({Key? key, required this.stories}) : super(key: key);
+  const TindercardView({super.key, required this.stories});
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +81,7 @@ class TindercardView extends StatelessWidget {
 class FullScreenCard extends StatelessWidget {
   final Tindercard card;
 
-  const FullScreenCard({Key? key, required this.card}) : super(key: key);
+  const FullScreenCard({super.key, required this.card});
 
   @override
   Widget build(BuildContext context) {

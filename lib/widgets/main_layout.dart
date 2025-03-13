@@ -4,7 +4,7 @@ import 'package:google_nav_bar/google_nav_bar.dart';
 
 class MainLayout extends StatefulWidget {
   final Widget child;
-  const MainLayout({Key? key, required this.child}) : super(key: key);
+  const MainLayout({super.key, required this.child});
 
   @override
   State<MainLayout> createState() => _MainLayoutState();
