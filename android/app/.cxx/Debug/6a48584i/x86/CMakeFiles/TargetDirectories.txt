@@ -1,0 +1,2 @@
+C:/xampp/htdocs/elarosgroup/Sleep_Kids_App/android/app/.cxx/Debug/6a48584i/x86/CMakeFiles/edit_cache.dir
+C:/xampp/htdocs/elarosgroup/Sleep_Kids_App/android/app/.cxx/Debug/6a48584i/x86/CMakeFiles/rebuild_cache.dir

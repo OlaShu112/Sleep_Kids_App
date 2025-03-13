@@ -17,12 +17,44 @@ import 'views/home/education_screen.dart';
 import 'views/home/dashboard_screen.dart';
 import 'views/home/sleep_goal_screen.dart' as sleep_goal;
 import 'views/home/achievements_screen.dart';
+import 'views/home/SleepDataScreen.dart';
 import 'widgets/main_layout.dart';
+//import 'package:sleep_kids_app/widgets/main_layout.dart';
+//import 'package:sleep_kids_app/views/home/sleep_goal_screen.dart' as sleep_goal;
+//import 'package:sleep_kids_app/views/home/achievements_screen.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  runApp(MyApp());
+
+  // ✅ Initialize Firebase differently for web and mobile
+  if (kIsWeb) {
+    await Firebase.initializeApp(
+      options: FirebaseOptions(
+        apiKey: "AIzaSyDabNeTVkTt5tW0T8EtAB6yBAL6PJJEz7o",
+        authDomain: "sleep-apps-efda6.firebaseapp.com",
+        projectId: "sleep-apps-efda6",
+        storageBucket: "sleep-apps-efda6.appspot.com",
+        messagingSenderId: "275997062867",
+        appId: "1:275997062867:web:477d257273ac42af110626",
+        measurementId: "G-B354J4K5CS",
+      ),
+    );
+  } else {
+    await Firebase.initializeApp();
+  }
+
+  print("✅ Firebase Initialized Successfully!");
+
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+            create: (context) => AuthProvider()), // ✅ Initialize AuthProvider
+      ],
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -32,16 +64,44 @@ class MyApp extends StatelessWidget {
       GoRoute(path: '/', builder: (context, state) => MainPage()),
       GoRoute(path: '/login', builder: (context, state) => LoginScreen()),
       GoRoute(path: '/signup', builder: (context, state) => SignUpScreen()),
-      GoRoute(path: '/sleep-tracking', builder: (context, state) => MainLayout(child: SleepTrackingScreen())),
-      GoRoute(path: '/analytics', builder: (context, state) => MainLayout(child: AnalyticsScreen())),
-      GoRoute(path: '/bedtime-stories', builder: (context, state) => MainLayout(child: BedtimeStoriesScreen())),
-      GoRoute(path: '/profile', builder: (context, state) => MainLayout(child: ProfileScreen())),
-      GoRoute(path: '/goal', builder: (context, state) => MainLayout(child: GoalScreen())),
-      GoRoute(path: '/education', builder: (context, state) => MainLayout(child: EducationScreen())),
-      GoRoute(path: '/home', builder: (context, state) => MainLayout(child: HomeScreen())),
-      GoRoute(path: '/dashboard', builder: (context, state) => DashboardScreen()),
-      GoRoute(path: '/sleep-goals', builder: (context, state) => MainLayout(child: sleep_goal.SleepGoalScreen())),
-      GoRoute(path: '/achievement', builder: (context, state) => MainLayout(child: AchievementsScreen())),
+      GoRoute(
+          path: '/sleep-tracking',
+          builder: (context, state) =>
+              MainLayout(child: SleepTrackingScreen())),
+      GoRoute(
+          path: '/analytics',
+          builder: (context, state) => MainLayout(child: AnalyticsScreen())),
+      GoRoute(
+          path: '/bedtime-stories',
+          builder: (context, state) =>
+              MainLayout(child: BedtimeStoriesScreen())),
+      GoRoute(
+          path: '/profile',
+          builder: (context, state) => MainLayout(child: ProfileScreen())),
+      GoRoute(
+          path: '/goal',
+          builder: (context, state) => MainLayout(child: GoalScreen())),
+      GoRoute(
+          path: '/education',
+          builder: (context, state) => MainLayout(child: EducationScreen())),
+      GoRoute(
+          path: '/home',
+          builder: (context, state) => MainLayout(child: HomeScreen())),
+      GoRoute(
+          path: '/dashboard', builder: (context, state) => DashboardScreen()),
+      GoRoute(
+          path: '/sleep-goals',
+          builder: (context, state) =>
+              MainLayout(child: sleep_goal.SleepGoalScreen())),
+      GoRoute(
+          path: '/icon-watch/:sleepId',
+          builder: (context, state) {
+            final sleepId = state.pathParameters['sleepId']!;
+            return MainLayout(child: SleepDataScreen(sleepId: sleepId));
+          }),
+      GoRoute(
+          path: '/achievement',
+          builder: (context, state) => MainLayout(child: AchievementsScreen())),
     ],
   );
 
@@ -103,7 +163,10 @@ class _MainPageState extends State<MainPage> {
             errorBuilder: (context, error, stackTrace) => Center(
               child: Text(
                 'Image not found',
-                style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold),
               ),
             ),
           ),
@@ -123,20 +186,29 @@ class _MainPageState extends State<MainPage> {
               SizedBox(height: 30),
               Text(
                 currentTime,
-                style: TextStyle(fontSize: 80, fontWeight: FontWeight.bold, color: Colors.white),
+                style: TextStyle(
+                    fontSize: 80,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
                 textAlign: TextAlign.center,
               ),
               Spacer(),
               if (showSleepKids)
                 Text(
                   'Sleep Kids',
-                  style: TextStyle(fontSize: 64, fontWeight: FontWeight.bold, color: Colors.white),
+                  style: TextStyle(
+                      fontSize: 64,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
                   textAlign: TextAlign.center,
                 ),
               SizedBox(height: 20),
               Text(
                 'Wake Up Easy with Sleep Kids',
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
+                style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: 30),
@@ -144,7 +216,10 @@ class _MainPageState extends State<MainPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
                   'Sleep Kids tracks and analyzes your sleep, waking you up at the most perfect time.',
-                  style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -184,20 +259,36 @@ class CustomNavbar extends StatelessWidget {
                 padding: EdgeInsets.all(20),
                 child: Text(
                   'Menu',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blue),
+                  style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue),
                 ),
               ),
             ),
-            ListTile(title: Text('About Us', style: TextStyle(color: Colors.white)), onTap: () => print('About Us')),
-            ListTile(title: Text('Contact Us', style: TextStyle(color: Colors.white)), onTap: () => print('Contact Us')),
-            ListTile(title: Text('Other Pages', style: TextStyle(color: Colors.white)), onTap: () => print('Other Pages')),
-            ListTile(title: Text('Dashboard', style: TextStyle(color: Colors.white)), onTap: () => context.go('/dashboard')),
-            ListTile(title: Text('Login', style: TextStyle(color: Colors.white)), onTap: () => context.go('/login')),
-            ListTile(title: Text('Signup', style: TextStyle(color: Colors.white)), onTap: () => context.go('/signup')),
+            ListTile(
+                title: Text('About Us', style: TextStyle(color: Colors.white)),
+                onTap: () => print('About Us')),
+            ListTile(
+                title:
+                    Text('Contact Us', style: TextStyle(color: Colors.white)),
+                onTap: () => print('Contact Us')),
+            ListTile(
+                title:
+                    Text('Other Pages', style: TextStyle(color: Colors.white)),
+                onTap: () => print('Other Pages')),
+            ListTile(
+                title: Text('Dashboard', style: TextStyle(color: Colors.white)),
+                onTap: () => context.go('/dashboard')),
+            ListTile(
+                title: Text('Login', style: TextStyle(color: Colors.white)),
+                onTap: () => context.go('/login')),
+            ListTile(
+                title: Text('Signup', style: TextStyle(color: Colors.white)),
+                onTap: () => context.go('/signup')),
           ],
         ),
       ),
     );
   }
 }
-
