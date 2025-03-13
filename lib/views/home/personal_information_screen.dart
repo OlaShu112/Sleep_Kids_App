@@ -7,7 +7,7 @@ import 'package:sleep_kids_app/core/models/child_profile_model.dart';
 import 'package:intl/intl.dart';
 
 class PersonalInformationScreen extends StatefulWidget {
-  const PersonalInformationScreen({Key? key}) : super(key: key);
+  const PersonalInformationScreen({super.key});
 
   @override
   _PersonalInformationScreenState createState() =>
@@ -28,6 +28,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
   List<ChildProfile> children = [];
   List<IssueModel> availableIssue = [];
   List<String> selectedIssues = []; // ✅ Store selected issues
+
 
   @override
   void initState() {
@@ -52,34 +53,34 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
     }
   }
 
-  void _fetchIssues() async {
-    List<IssueModel> fetchedIssues = await _firebaseService.fetchIssues();
-    setState(() {
-      availableIssue = fetchedIssues;
-    });
-    print("✅ Issues Fetched: ${availableIssue.length}");
-  }
+void _fetchIssues() async {
+  List<IssueModel> fetchedIssues = await _firebaseService.fetchIssues();
+  setState(() {
+    availableIssue = fetchedIssues; 
+  });
+  print("✅ Issues Fetched: ${availableIssue.length}");
+}
 
   // 🔹 Fetch child profiles from Firestore
   void _fetchChildren() async {
-    User? user = _auth.currentUser;
-    if (user != null) {
-      print("🚀 Fetching children for user: ${user.uid}");
+  User? user = _auth.currentUser;
+  if (user != null) {
+    print("🚀 Fetching children for user: ${user.uid}");
+    
+    List<ChildProfile> fetchedChildren = await _firebaseService.getChildProfiles(user.uid);
 
-      List<ChildProfile> fetchedChildren =
-          await _firebaseService.getChildProfiles(user.uid);
+    setState(() {
+      children = fetchedChildren;
+    });
 
-      setState(() {
-        children = fetchedChildren;
-      });
-
-      if (fetchedChildren.isEmpty) {
-        print("❌ No children found.");
-      } else {
-        print("✅ Successfully fetched ${fetchedChildren.length} children.");
-      }
+    if (fetchedChildren.isEmpty) {
+      print("❌ No children found.");
+    } else {
+      print("✅ Successfully fetched ${fetchedChildren.length} children.");
     }
   }
+}
+
 
   // 🔹 Save updated user data
   void _saveUserData() async {
@@ -174,6 +175,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
       );
     }
   }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -233,64 +235,51 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           SizedBox(height: 10),
 
-          Column(
-            children: children.isNotEmpty
-                ? children.map((child) {
-                    print(
-                        "✅ Displaying Child: ${child.childName}"); // 🔹 Debugging
+Column(
+  children: children.isNotEmpty 
+      ? children.map((child) {
+          print("✅ Displaying Child: ${child.childName}"); // 🔹 Debugging
 
-                    // Convert Issue ID to IssueContext
-                    List<String> issueNames =
-                        child.issueId != null && child.issueId!.isNotEmpty
-                            ? child.issueId!
-                                .map((id) => availableIssue
-                                    .firstWhere(
-                                      (issue) => issue.issueId == id,
-                                      orElse: () => IssueModel(
-                                          issueId: '',
-                                          issueContext: 'Unknown Issue',
-                                          solution: ''),
-                                    )
-                                    .issueContext)
-                                .toList()
-                            : [];
+          // Convert Issue ID to IssueContext
+          List<String> issueNames = child.issueId != null && child.issueId!.isNotEmpty
+              ? child.issueId!.map((id) => 
+                  availableIssue.firstWhere(
+                    (issue) => issue.issueId == id,
+                    orElse: () => IssueModel(issueId: '', issueContext: 'Unknown Issue', solution: ''),
+                  ).issueContext
+                ).toList()
+              : [];
 
-                    return Card(
-                      margin: EdgeInsets.only(bottom: 10),
-                      child: Padding(
-                        padding: EdgeInsets.all(10),
-                        child: Row(
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("Child Name: ${child.childName}",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold)),
-                                Text(
-                                    "DOB: ${DateFormat('yyyy-MM-dd').format(child.dateOfBirth)}"),
-                                Text(
-                                  "Health Issues: ${issueNames.isNotEmpty ? issueNames.join(", ") : "None"}",
-                                  style: TextStyle(
-                                      color: Colors.redAccent,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                IconButton(
-                                  icon: Icon(Icons.delete, color: Colors.red),
-                                  onPressed: () => _removeChild(child.childId),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+          return Card(
+            margin: EdgeInsets.only(bottom: 10),
+            child: Padding(
+              padding: EdgeInsets.all(10),
+              child: Row(
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("Child Name: ${child.childName}",
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      Text(
+                          "DOB: ${DateFormat('yyyy-MM-dd').format(child.dateOfBirth)}"),
+                      Text(
+                        "Health Issues: ${issueNames.isNotEmpty ? issueNames.join(", ") : "None"}",
+                        style: TextStyle(
+                            color: Colors.redAccent,
+                            fontWeight: FontWeight.bold),
                       ),
-                    );
-                  }).toList()
-                : [
-                    Text("❌ No children found",
-                        style: TextStyle(color: Colors.red))
-                  ], // Show message if empty
-          ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        }).toList()
+      : [Text("❌ No children found", style: TextStyle(color: Colors.red))], // Show message if empty
+),
+
+
 
           SizedBox(height: 20),
 
