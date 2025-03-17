@@ -79,7 +79,7 @@ class ChildProfile {
       'awakeningsId': awakeningsId ?? [], // Fixed this line
       'dateOfBirth': Timestamp.fromDate(dateOfBirth),
       'profileImageUrl': profileImageUrl ?? '',
-      'guardianId': guardianId ?? [],
+      'guardianId': guardianId,
     };
   }
 }
