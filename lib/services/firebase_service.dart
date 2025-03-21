@@ -43,6 +43,44 @@ class FirebaseService {
       "role": user.role,
     });
   }
+//insertGoal
+  Future<void> insertGoal(Goal goal) async {
+    await _db.collection("goals").doc(goal.goalId).set({
+      "goalId": goal.goalId,
+      "childId": goal.childId,
+      "wakeUpTime": Timestamp.fromDate(goal.wakeUpTime),
+      "bedtime": Timestamp.fromDate(goal.bedtime),
+
+      "duration": goal.duration,
+      "isComplete": goal.isCompleted,
+    });
+  }
+// set goal for a child
+Future<Goal?> fetchGoalForChild(String childId) async {
+  try {
+    // Query the 'goals' collection to fetch the goal document by the 'childId' field.
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('goals')
+        .where('childId', isEqualTo: childId)
+        .get();
+
+    if (querySnapshot.docs.isEmpty) {
+      print("❌ Goal for child $childId not found.");
+      return null; // Return null if no goal document found for this child.
+    }
+
+    // Fetch the first document from the query snapshot (since there should only be one goal per child)
+    DocumentSnapshot goalDoc = querySnapshot.docs.first;
+
+    // Parse and return the Goal from Firestore document
+    return Goal.fromDocument(goalDoc);
+  } catch (e) {
+    print("❌ Error fetching goal for child $childId: $e");
+    return null; // Return null in case of an error.
+  }
+}
+
+
 
   // Retrieve UserModel from Firestore
   Future<UserModel?> getUser(String userId) async {
@@ -52,6 +90,7 @@ class FirebaseService {
     }
     return null;
   }
+
 
   // Save Child Profile to Firestore
   Future<void> addChildProfile(ChildProfile childProfile) async {
@@ -129,12 +168,23 @@ Future<List<IssueModel>> getChildIssues(List<String> issueIds) async {
 
 
   // Fetch all children linked to the current user
-  Stream<QuerySnapshot> fetchChildren(String guardianId) {
-    return _db
+Future<List<Map<String, dynamic>>> fetchChildren(String guardianId) async {
+  try {
+    QuerySnapshot querySnapshot = await _db
         .collection('child_profiles')
         .where('guardianId', arrayContains: guardianId)
-        .snapshots();
+        .get();
+
+    return querySnapshot.docs.map((doc) => {
+      "id": doc.id,
+      ...doc.data() as Map<String, dynamic>,
+    }).toList();
+  } catch (e) {
+    print("❌ Error fetching children: $e");
+    return [];
   }
+}
+
 
   // Fetch a child's sleep goal data
   Future<DocumentSnapshot?> fetchChildGoal(String childId) async {

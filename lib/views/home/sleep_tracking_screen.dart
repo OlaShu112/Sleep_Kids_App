@@ -197,11 +197,11 @@ void _fetchChildren() async {
   }
 
 Future<void> _showAddChildDialog(BuildContext context) async {
-  final TextEditingController _nameController = TextEditingController();
-  DateTime? _selectedDate;
+  final TextEditingController nameController = TextEditingController();
+  DateTime? selectedDate;
   List<IssueModel> availableIssues = [];
   List<String> selectedIssues = [];
-  File? _selectedImage;
+  File? selectedImage;
 
   try {
     // ✅ Fetch issues from Firestore (Ensure collection name is correct)
@@ -225,7 +225,7 @@ Future<void> _showAddChildDialog(BuildContext context) async {
                 children: [
                   // 🔹 Child Name Input
                   TextField(
-                    controller: _nameController,
+                    controller: nameController,
                     decoration: const InputDecoration(labelText: "Child's Name"),
                   ),
                   const SizedBox(height: 10),
@@ -235,21 +235,21 @@ Future<void> _showAddChildDialog(BuildContext context) async {
                     onPressed: () async {
                       DateTime? pickedDate = await showDatePicker(
                         context: context,
-                        initialDate: _selectedDate ?? DateTime.now(),
+                        initialDate: selectedDate ?? DateTime.now(),
                         firstDate: DateTime(2000),
                         lastDate: DateTime.now(),
                       );
 
                       if (pickedDate != null) {
                         setDialogState(() {
-                          _selectedDate = pickedDate;
+                          selectedDate = pickedDate;
                         });
                       }
                     },
                     child: Text(
-                      _selectedDate == null
+                      selectedDate == null
                           ? "Pick Date of Birth"
-                          : "DOB: ${DateFormat('yyyy-MM-dd').format(_selectedDate!)}",
+                          : "DOB: ${DateFormat('yyyy-MM-dd').format(selectedDate!)}",
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -290,11 +290,11 @@ Future<void> _showAddChildDialog(BuildContext context) async {
               // Add Child Button
               TextButton(
                 onPressed: () async {
-                  final String name = _nameController.text;
-                  if (_user != null && name.isNotEmpty && _selectedDate != null) {
+                  final String name = nameController.text;
+                  if (_user != null && name.isNotEmpty && selectedDate != null) {
                     await _firestore.collection('child_profiles').add({
                       'childName': name,
-                      'dateOfBirth': DateFormat('yyyy-MM-dd').format(_selectedDate!),
+                      'dateOfBirth': DateFormat('yyyy-MM-dd').format(selectedDate!),
                       'issueId': selectedIssues,
                       'guardianId': [_user!.uid],
                     });
