@@ -28,6 +28,8 @@ void checkAuthStatus() {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -43,7 +45,7 @@ class MyApp extends StatelessWidget {
 class SleepDataScreen extends StatefulWidget {
   final String sleepId;
 
-  const SleepDataScreen({Key? key, required this.sleepId}) : super(key: key);
+  const SleepDataScreen({super.key, required this.sleepId});
 
   @override
   _SleepDataScreenState createState() => _SleepDataScreenState();

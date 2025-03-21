@@ -7,6 +7,8 @@ import 'package:sleep_kids_app/core/models/user_model.dart';
 import 'package:sleep_kids_app/services/firebase_service.dart';
 
 class SignUpScreen extends StatefulWidget {
+  const SignUpScreen({super.key});
+
   @override
   _SignUpScreenState createState() => _SignUpScreenState();
 }
@@ -256,10 +258,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
         ),
         validator: (value) {
           if (value == null || value.isEmpty) return 'This field is required';
-          if (isEmail && !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value))
+          if (isEmail && !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
             return 'Enter a valid email';
-          if (isPassword && value.length < 6)
+          }
+          if (isPassword && value.length < 6) {
             return 'Password must be at least 6 characters';
+          }
           return null;
         },
       ),

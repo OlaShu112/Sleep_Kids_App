@@ -8,7 +8,7 @@ import 'package:sleep_kids_app/views/home/change_password.dart';
 import 'package:sleep_kids_app/views/home/personal_information_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  const ProfileScreen({super.key});
 
   @override
   _ProfileScreenState createState() => _ProfileScreenState();

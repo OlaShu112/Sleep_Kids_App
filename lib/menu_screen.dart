@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';  // To handle the JSON data
 
 class MenuScreen extends StatefulWidget {
+  const MenuScreen({super.key});
+
   @override
   _MenuScreenState createState() => _MenuScreenState();
 }

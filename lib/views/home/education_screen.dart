@@ -6,7 +6,7 @@ import 'package:sleep_kids_app/core/models/issue_model.dart';
 import 'package:sleep_kids_app/services/firebase_service.dart';
 
 class EducationScreen extends StatefulWidget {
-  const EducationScreen({Key? key}) : super(key: key);
+  const EducationScreen({super.key});
 
   @override
   _EducationScreenState createState() => _EducationScreenState();

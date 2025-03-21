@@ -4,8 +4,8 @@ class Goal {
   String goalId;
   String childId;
   int duration;
-  DateTime WakeUpTime;
-  DateTime BedTime;
+  DateTime wakeUpTime;
+  DateTime bedtime;
   bool isCompleted;
 
 
@@ -13,8 +13,8 @@ class Goal {
     required this.goalId,
     required this.childId,
     required this.duration,
-    required this.WakeUpTime,
-    required this.BedTime,
+    required this.wakeUpTime,
+    required this.bedtime,
     required this.isCompleted,
 
   });
@@ -25,8 +25,14 @@ class Goal {
       goalId: doc.id,
       childId: data['childId'],
       duration: data['duration'] ?? 0,
-      WakeUpTime: data['WakeUpTime'] ?? 0,
-      BedTime: data['BedTime'] ?? 0,
+      wakeUpTime: data['wakeUpTime'] != null
+          ? DateTime.parse(data['wakeUpTime']) // Parse the wakeUpTime string
+          : DateTime.now(),
+
+      bedtime: data['bedtime'] != null
+          ? DateTime.parse(data['bedtime']) // Parse the bedtime string
+          : DateTime.now(),
+
       isCompleted: data['isCompleted'] ?? false,
 
     );
@@ -36,8 +42,8 @@ class Goal {
     return {
       'childId': childId,
       'duration': duration,
-      'WakeUpTime': WakeUpTime,
-      'BedTime' : BedTime,
+      'wakeUpTime': wakeUpTime.toIso8601String(), 
+      'bedtime': bedtime.toIso8601String(),  
       'isCompleted': isCompleted,
 
     };
