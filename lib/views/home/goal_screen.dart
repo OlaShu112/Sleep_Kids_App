@@ -52,24 +52,29 @@ void _saveGoalData(String childId) async {
     // Parse wake-up time (e.g., 07:30)
     String wakeUpTimeInput = _goalWakeUpController.text;
     DateTime wakeUpTime = DateTime(
-      currentDate.year, 
-      currentDate.month, 
-      currentDate.day, 
-      int.parse(wakeUpTimeInput.split(":")[0]), 
+      currentDate.year,
+      currentDate.month,
+      currentDate.day,
+      int.parse(wakeUpTimeInput.split(":")[0]),
       int.parse(wakeUpTimeInput.split(":")[1])
     );
 
     // Parse bedtime (e.g., 22:00)
     String bedTimeInput = _goalBedTimeController.text;
     DateTime bedTime = DateTime(
-      currentDate.year, 
-      currentDate.month, 
-      currentDate.day, 
-      int.parse(bedTimeInput.split(":")[0]), 
+      currentDate.year,
+      currentDate.month,
+      currentDate.day,
+      int.parse(bedTimeInput.split(":")[0]),
       int.parse(bedTimeInput.split(":")[1])
     );
 
-    // Calculate duration (in minutes)
+    // If wakeUpTime is earlier than bedTime, add a day to wakeUpTime
+    if (wakeUpTime.isBefore(bedTime)) {
+      wakeUpTime = wakeUpTime.add(Duration(days: 1)); // Wake-up time is on the next day
+    }
+
+    // Calculate duration (in hours, with decimals)
     double duration = wakeUpTime.difference(bedTime).inMinutes / 60.0;
 
     // Save to Firestore
@@ -86,12 +91,14 @@ void _saveGoalData(String childId) async {
     );
 
     Navigator.pop(context);
+    setState(() {}); 
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text("Error: ${e.toString()}")),
     );
   }
 }
+
 
 
 
