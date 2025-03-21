@@ -1,4 +1,3 @@
-
 // ✅ Interacts with Firebase Firestore
 // ✅ Stores, retrieves, updates, and deletes user data
 // ✅ Does NOT handle login state or UI updates
@@ -68,7 +67,6 @@ class FirebaseService {
   Future<void> removeChildProfile(String childId) async {
   await FirebaseFirestore.instance.collection('child_profiles').doc(childId).delete();
 }
-
 
 
 
