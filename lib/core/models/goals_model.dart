@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class Goal {
   String goalId;
   String childId;
-  int duration;
+  double duration;
   DateTime wakeUpTime;
   DateTime bedtime;
   bool isCompleted;
