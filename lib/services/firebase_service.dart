@@ -186,6 +186,49 @@ Future<List<Map<String, dynamic>>> fetchChildren(String guardianId) async {
 }
 
 
+//add parents to all child
+//guardianId is the existing parentID
+Future<void> addGuardianToChildren(String parentEmail, String guardianId) async {
+    try {
+      // Find the parent by email
+      QuerySnapshot userSnapshot = await _db
+          .collection('users')
+          .where('email', isEqualTo: parentEmail)
+          .get();
+
+      if (userSnapshot.docs.isEmpty) {
+        print("❌ No parent found with this email.");
+        return;
+      }
+
+      String parentId = userSnapshot.docs.first.id;  // Get parent ID from the users collection
+      
+      //Fetch all children who don't have this guardian
+      QuerySnapshot childSnapshot = await _db
+          .collection('child_profiles')
+          .where('guardianId', arrayContains: guardianId)  
+          .get();
+
+      if (childSnapshot.docs.isEmpty) {
+        print("❌ No children need to be updated.");
+        return;
+      }
+
+      //Loop through each child and add the parent to the guardianId array
+      for (var childDoc in childSnapshot.docs) {
+        await _db.collection('child_profiles').doc(childDoc.id).update({
+          'guardianId': FieldValue.arrayUnion([parentId]),
+        });
+
+        print("✅ Parent added to child ${childDoc.id}");
+      }
+
+    } catch (e) {
+      print("❌ Error adding guardian to children: $e");
+    }
+  }
+
+
   // Fetch a child's sleep goal data
   Future<DocumentSnapshot?> fetchChildGoal(String childId) async {
     final goalDoc = await _db.collection('goals').doc(childId).get();
