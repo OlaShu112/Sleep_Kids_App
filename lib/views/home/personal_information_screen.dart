@@ -22,13 +22,14 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _childNameController = TextEditingController();
+  final TextEditingController _newParentEmailController = TextEditingController();
+
   DateTime? _selectedDate;
 
   bool isEditing = false;
   List<ChildProfile> children = [];
   List<IssueModel> availableIssue = [];
   List<String> selectedIssues = []; // ✅ Store selected issues
-
 
   @override
   void initState() {
@@ -53,36 +54,36 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
     }
   }
 
-void _fetchIssues() async {
-  List<IssueModel> fetchedIssues = await _firebaseService.fetchIssues();
-  setState(() {
-    availableIssue = fetchedIssues; 
-  });
-  print("✅ Issues Fetched: ${availableIssue.length}");
-}
+  void _fetchIssues() async {
+    List<IssueModel> fetchedIssues = await _firebaseService.fetchIssues();
+    setState(() {
+      availableIssue = fetchedIssues;
+    });
+    print("✅ Issues Fetched: ${availableIssue.length}");
+  }
 
   // 🔹 Fetch child profiles from Firestore
   void _fetchChildren() async {
-  User? user = _auth.currentUser;
-  if (user != null) {
-    print("🚀 Fetching children for user: ${user.uid}");
-    
-    List<ChildProfile> fetchedChildren = await _firebaseService.getChildProfiles(user.uid);
+    User? user = _auth.currentUser;
+    if (user != null) {
+      print("🚀 Fetching children for user: ${user.uid}");
 
-    setState(() {
-      children = fetchedChildren;
-    });
+      List<ChildProfile> fetchedChildren =
+          await _firebaseService.getChildProfiles(user.uid);
 
-    if (fetchedChildren.isEmpty) {
-      print("❌ No children found.");
-    } else {
-      print("✅ Successfully fetched ${fetchedChildren.length} children.");
+      setState(() {
+        children = fetchedChildren;
+      });
+
+      if (fetchedChildren.isEmpty) {
+        print("❌ No children found.");
+      } else {
+        print("✅ Successfully fetched ${fetchedChildren.length} children.");
+      }
     }
   }
-}
 
-
-  // 🔹 Save updated user data
+  // Save updated user data
   void _saveUserData() async {
     User? user = _auth.currentUser;
     if (user != null) {
@@ -120,7 +121,42 @@ void _fetchIssues() async {
     }
   }
 
-  // Add Child Profile (from the early code)
+  //function to add parents
+  Future<void> _addParent() async {
+    final String email = _newParentEmailController.text;
+    User? user = _auth.currentUser;
+
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter an email")),
+      );
+      return;
+    }
+
+    try {
+      // Call the FirebaseService method to add the parent to the child profile
+
+      if (user != null) {
+        await _firebaseService.addGuardianToChildren(email, user.uid);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Parent added successfully")),
+        );
+
+        // Close the dialog
+        Navigator.pop(context);
+
+        // Reset the text controller
+        _newParentEmailController.clear();
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: ${e.toString()}")),
+      );
+    }
+  }
+
+  // Add Child Profile
   void _addChild() async {
     User? user = _auth.currentUser;
     if (user != null &&
@@ -160,6 +196,43 @@ void _fetchIssues() async {
     }
   }
 
+//to display a pop page for user to enter email.
+  void _showAddParentDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Add Parent"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _newParentEmailController,
+                decoration: const InputDecoration(
+                  labelText: "Email",
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.emailAddress,
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Close the dialog
+              },
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: _addParent,
+              child: const Text("Add"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   // 🔹 Remove Child Profile
   void _removeChild(String childId) async {
     try {
@@ -175,7 +248,6 @@ void _fetchIssues() async {
       );
     }
   }
-  
 
   @override
   Widget build(BuildContext context) {
@@ -212,21 +284,49 @@ void _fetchIssues() async {
           ),
           SizedBox(height: 20),
 
-          Align(
-            alignment: Alignment.centerRight,
-            child: ElevatedButton(
-              onPressed: isEditing
-                  ? _saveUserData
-                  : () {
-                      setState(() {
-                        isEditing = true;
-                      });
-                    },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isEditing ? Colors.green : Colors.blue,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Align(
+                alignment: Alignment.center,
+                child: ElevatedButton(
+                  onPressed: _showAddParentDialog,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueAccent,
+                    // Change the color to purple or any color you prefer
+                  ),
+                  child: const Text(
+                    "Add Parent",
+                    style: TextStyle(
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
               ),
-              child: Text(isEditing ? "Save Changes" : "Edit"),
-            ),
+              SizedBox(
+                width: 20,
+              ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: ElevatedButton(
+                  onPressed: isEditing
+                      ? _saveUserData
+                      : () {
+                          setState(() {
+                            isEditing = true;
+                          });
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        isEditing ? Colors.green : Colors.blueAccent,
+                  ),
+                  child: Text(
+                    isEditing ? "Save Changes" : "Edit",
+                    style: TextStyle(color: Colors.black),
+                  ),
+                ),
+              ),
+            ],
           ),
 
           SizedBox(height: 30),
@@ -235,51 +335,60 @@ void _fetchIssues() async {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           SizedBox(height: 10),
 
-Column(
-  children: children.isNotEmpty 
-      ? children.map((child) {
-          print("✅ Displaying Child: ${child.childName}"); // 🔹 Debugging
+          Column(
+            children: children.isNotEmpty
+                ? children.map((child) {
+                    print(
+                        "✅ Displaying Child: ${child.childName}"); // 🔹 Debugging
 
-          // Convert Issue ID to IssueContext
-          List<String> issueNames = child.issueId != null && child.issueId!.isNotEmpty
-              ? child.issueId!.map((id) => 
-                  availableIssue.firstWhere(
-                    (issue) => issue.issueId == id,
-                    orElse: () => IssueModel(issueId: '', issueContext: 'Unknown Issue', solution: ''),
-                  ).issueContext
-                ).toList()
-              : [];
+                    // Convert Issue ID to IssueContext
+                    List<String> issueNames =
+                        child.issueId != null && child.issueId!.isNotEmpty
+                            ? child.issueId!
+                                .map((id) => availableIssue
+                                    .firstWhere(
+                                      (issue) => issue.issueId == id,
+                                      orElse: () => IssueModel(
+                                          issueId: '',
+                                          issueContext: 'Unknown Issue',
+                                          solution: ''),
+                                    )
+                                    .issueContext)
+                                .toList()
+                            : [];
 
-          return Card(
-            margin: EdgeInsets.only(bottom: 10),
-            child: Padding(
-              padding: EdgeInsets.all(10),
-              child: Row(
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Child Name: ${child.childName}",
-                          style: TextStyle(fontWeight: FontWeight.bold)),
-                      Text(
-                          "DOB: ${DateFormat('yyyy-MM-dd').format(child.dateOfBirth)}"),
-                      Text(
-                        "Health Issues: ${issueNames.isNotEmpty ? issueNames.join(", ") : "None"}",
-                        style: TextStyle(
-                            color: Colors.redAccent,
-                            fontWeight: FontWeight.bold),
+                    return Card(
+                      margin: EdgeInsets.only(bottom: 10),
+                      child: Padding(
+                        padding: EdgeInsets.all(10),
+                        child: Row(
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("Child Name: ${child.childName}",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold)),
+                                Text(
+                                    "DOB: ${DateFormat('yyyy-MM-dd').format(child.dateOfBirth)}"),
+                                Text(
+                                  "Health Issues: ${issueNames.isNotEmpty ? issueNames.join(", ") : "None"}",
+                                  style: TextStyle(
+                                      color: Colors.redAccent,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          );
-        }).toList()
-      : [Text("❌ No children found", style: TextStyle(color: Colors.red))], // Show message if empty
-),
-
-
+                    );
+                  }).toList()
+                : [
+                    Text("❌ No children found",
+                        style: TextStyle(color: Colors.red))
+                  ], // Show message if empty
+          ),
 
           SizedBox(height: 20),
 
