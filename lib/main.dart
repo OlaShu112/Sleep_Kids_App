@@ -105,6 +105,8 @@ class MyApp extends StatelessWidget {
     ],
   );
 
+  MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -123,6 +125,8 @@ class MyApp extends StatelessWidget {
 }
 
 class MainPage extends StatefulWidget {
+  const MainPage({super.key});
+
   @override
   _MainPageState createState() => _MainPageState();
 }
@@ -245,6 +249,8 @@ class _MainPageState extends State<MainPage> {
 }
 
 class CustomNavbar extends StatelessWidget {
+  const CustomNavbar({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Drawer(

@@ -41,6 +41,7 @@ dependencies:
   flutter_spinkit: ^5.1.0
   logger: ^1.1.0
   fl_chart: ^0.63.0
+  flutter_svg: ^0.22.0 
 
   google_nav_bar: ^5.0.7
   
@@ -86,6 +87,7 @@ flutter:
     - assets/images/nav_bg.jpg
     - assets/images/logo.png
     - assets/images/watch_icon.png
+    - assets/images/night_sky.jpeg
 
 
   # The following line ensures that the Material Icons font is

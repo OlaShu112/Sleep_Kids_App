@@ -1,22 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-//import 'package:sleep_kids_app/core/models/goals_model.dart';
+import 'package:sleep_kids_app/core/models/goals_model.dart';
 import 'package:sleep_kids_app/services/firebase_service.dart';
 
 class GoalScreen extends StatefulWidget {
-  const GoalScreen({Key? key}) : super(key: key);
+  const GoalScreen({super.key});
 
   @override
   _GoalScreenState createState() => _GoalScreenState();
 }
 
-class _GoalScreenState extends State<GoalScreen>
-    with SingleTickerProviderStateMixin {
+class _GoalScreenState extends State<GoalScreen> {
   final FirebaseService _firebaseService = FirebaseService();
   String? currentUserId;
-  late AnimationController _animationController;
-  late Animation<Offset> offsetAnimation;
 
   final TextEditingController _goalWakeUpController = TextEditingController();
   final TextEditingController _goalBedTimeController = TextEditingController();
@@ -26,24 +23,6 @@ class _GoalScreenState extends State<GoalScreen>
   void initState() {
     super.initState();
     _getCurrentUserId();
-
-    // Initialize Animation Controller
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 500),
-    );
-
-    offsetAnimation = Tween<Offset>(
-      begin: const Offset(0, 1),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
-    );
-
-    // Start Animation when screen loads
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _animationController.forward();
-    });
   }
 
   // Get Current User ID
@@ -57,41 +36,82 @@ class _GoalScreenState extends State<GoalScreen>
   }
 
   // Save or Update Goal Data in Firestore
-  void _saveGoalData(String childId) async {
-    if (_goalWakeUpController.text.isEmpty ||
-        _goalBedTimeController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill in all required fields!")),
-      );
-      return;
-    }
-
-    try {
-      DateTime wakeUpTime = DateTime.parse(_goalWakeUpController.text);
-      DateTime bedTime = DateTime.parse(_goalBedTimeController.text);
-      int duration = wakeUpTime.difference(bedTime).inMinutes.abs();
-
-      await FirebaseFirestore.instance.collection('goals').doc(childId).set({
-        'wakeUpTime': wakeUpTime.toIso8601String(),
-        'bedTime': bedTime.toIso8601String(),
-        'duration': duration,
-        'isCompleted': false,
-      }, SetOptions(merge: true));
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Goal Saved Successfully!")),
-      );
-
-      Navigator.pop(context);
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: ${e.toString()}")),
-      );
-    }
+  // Save or Update Goal Data in Firestore
+void _saveGoalData(String childId) async {
+  if (_goalWakeUpController.text.isEmpty || _goalBedTimeController.text.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Please fill in all required fields!")),
+    );
+    return;
   }
 
+  try {
+    // Get current date to append to the entered time
+    DateTime currentDate = DateTime.now();
+
+    // Parse wake-up time (e.g., 07:30)
+    String wakeUpTimeInput = _goalWakeUpController.text;
+    DateTime wakeUpTime = DateTime(
+      currentDate.year,
+      currentDate.month,
+      currentDate.day,
+      int.parse(wakeUpTimeInput.split(":")[0]),
+      int.parse(wakeUpTimeInput.split(":")[1])
+    );
+
+    // Parse bedtime (e.g., 22:00)
+    String bedTimeInput = _goalBedTimeController.text;
+    DateTime bedTime = DateTime(
+      currentDate.year,
+      currentDate.month,
+      currentDate.day,
+      int.parse(bedTimeInput.split(":")[0]),
+      int.parse(bedTimeInput.split(":")[1])
+    );
+
+    // If wakeUpTime is earlier than bedTime, add a day to wakeUpTime
+    if (wakeUpTime.isBefore(bedTime)) {
+      wakeUpTime = wakeUpTime.add(Duration(days: 1)); // Wake-up time is on the next day
+    }
+
+    // Calculate duration (in hours, with decimals)
+    double duration = wakeUpTime.difference(bedTime).inMinutes / 60.0;
+
+    // Save to Firestore
+    await FirebaseFirestore.instance.collection('goals').doc(childId).set({
+      'childId': childId,
+      'wakeUpTime': wakeUpTime.toIso8601String(), // Store as full DateTime string
+      'bedtime': bedTime.toIso8601String(),       // Store as full DateTime string
+      'duration': duration,
+      'isCompleted': false,
+    }, SetOptions(merge: true));
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Goal Saved Successfully!")),
+    );
+
+    Navigator.pop(context);
+    setState(() {}); 
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Error: ${e.toString()}")),
+    );
+  }
+}
+
+
+
+
   // Show Add/Edit Goal Popup
-  void _showAddGoalScreen(String childId) {
+  void _showGoalForm(String childId, {Goal? goal}) {
+    if (goal != null) {
+      _goalWakeUpController.text = goal.wakeUpTime.toIso8601String().split("T")[1].substring(0, 5);
+      _goalBedTimeController.text = goal.bedtime.toIso8601String().split("T")[1].substring(0, 5);
+    } else {
+      _goalWakeUpController.clear();
+      _goalBedTimeController.clear();
+    }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -109,8 +129,8 @@ class _GoalScreenState extends State<GoalScreen>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Add Goal",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text(goal == null ? "Add Goal" : "Edit Goal",
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
             TextField(
               controller: _goalBedTimeController,
@@ -134,11 +154,9 @@ class _GoalScreenState extends State<GoalScreen>
               onPressed: () => _saveGoalData(childId),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
               ),
-              child: const Text("Save Goal",
-                  style: TextStyle(color: Colors.white)),
+              child: const Text("Save Goal", style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -152,67 +170,39 @@ class _GoalScreenState extends State<GoalScreen>
       appBar: AppBar(title: const Text("Sleep Goals")),
       body: currentUserId == null
           ? const Center(child: CircularProgressIndicator())
-          : StreamBuilder<QuerySnapshot>(
-              stream: _firebaseService.fetchChildren(currentUserId!),
+          : FutureBuilder<List<Map<String, dynamic>>>(
+              future: _firebaseService.fetchChildren(currentUserId!),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
 
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return const Center(child: Text("No children found."));
                 }
 
-                final children = snapshot.data!.docs;
+                final children = snapshot.data!;
 
                 return ListView.separated(
                   padding: const EdgeInsets.all(16),
                   itemCount: children.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: 10),
+                  separatorBuilder: (context, index) => const SizedBox(height: 10),
                   itemBuilder: (context, index) {
-                    final childData = children[index];
-                    final String childId = childData.id;
-                    final String childName = childData['childName'];
+                    final child = children[index];
+                    final String childId = child["id"];
+                    final String childName = child["childName"];
 
-                    return Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.blueAccent.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(15),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 5,
-                            offset: const Offset(2, 2),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Child: $childName",
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Center(
-                            child: ElevatedButton(
-                              onPressed: () => _showAddGoalScreen(childId),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 32, vertical: 12),
-                              ),
-                              child: const Text("Add Goal",
-                                  style: TextStyle(color: Colors.white)),
-                            ),
-                          ),
-                        ],
-                      ),
+                    return FutureBuilder<Goal?>(
+                      future: _firebaseService.fetchGoalForChild(childId),
+                      builder: (context, goalSnapshot) {
+                        if (goalSnapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(child: CircularProgressIndicator());
+                        }
+
+                        Goal? goal = goalSnapshot.data;
+
+                        return _buildChildCard(childId, childName, goal);
+                      },
                     );
                   },
                 );
@@ -221,11 +211,44 @@ class _GoalScreenState extends State<GoalScreen>
     );
   }
 
-  @override
-  void dispose() {
-    _animationController.dispose();
-    _goalBedTimeController.dispose();
-    _goalWakeUpController.dispose();
-    super.dispose();
+  Widget _buildChildCard(String childId, String childName, Goal? goal) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.blueAccent.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Child: $childName",
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 10),
+
+          if (goal != null) ...[
+            Text("⏰ Wake-up Time: ${goal.wakeUpTime.toIso8601String().split('T')[1].substring(0, 5)}"),
+            Text("🌙 Bedtime: ${goal.bedtime.toIso8601String().split('T')[1].substring(0, 5)}"),
+            Text("📊 Duration: ${goal.duration.toStringAsFixed(1)} hours"),
+            Text("🎯 Complete: ${goal.isCompleted ? '✅' : '❌'}"),
+            const SizedBox(height: 10),
+          ] else
+            const Text("Goal is not set."),
+
+          Center(
+            child: ElevatedButton(
+              onPressed: () => _showGoalForm(childId, goal: goal),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: goal != null ? Colors.blue : Colors.green,
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+              ),
+              child: Text(goal != null ? "Edit Goal" : "Add Goal",
+                  style: const TextStyle(color: Colors.white)),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
