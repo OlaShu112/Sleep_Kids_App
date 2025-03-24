@@ -18,55 +18,70 @@ class _BedtimeStoriesScreenState extends State<BedtimeStoriesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true, // Allows body to extend behind the AppBar
       appBar: AppBar(
+        elevation: 0, // Removes shadow
+        backgroundColor: Colors.transparent, // Make the AppBar transparent
         title: const Text(
           "Bedtime Stories",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white, // Make the title text white for visibility
+          ),
         ),
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: _fetchStories(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: Stack( // Stack to place background image behind other content
+        children: [
+          // Image Background that spans the entire screen
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/night_sky.jpeg', // Path to your background image
+              fit: BoxFit.cover, // Ensure the image covers the whole screen
+            ),
+          ),
+          // Content Layer
+          StreamBuilder<QuerySnapshot>(
+            stream: _fetchStories(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-          if (snapshot.hasError) {
-            return Center(child: Text(" Error: ${snapshot.error}"));
-          }
+              if (snapshot.hasError) {
+                return Center(child: Text("Error: ${snapshot.error}"));
+              }
 
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text("No bedtime stories available."));
-          }
+              if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                return const Center(child: Text("No bedtime stories available."));
+              }
 
-          // Convert Firestore data into a list of Tindercard objects
-          final List<Tindercard> stories = snapshot.data!.docs.map((doc) {
-            final data = doc.data() as Map<String, dynamic>? ?? {};
-            return Tindercard(
-              storyId: doc.id,
-              title: data['description'] ?? "No Title",
-              content: data['context'] ?? "No story available",
-            );
-          }).toList();
+              // Convert Firestore data into a list of Tindercard objects
+              final List<Tindercard> stories = snapshot.data!.docs.map((doc) {
+                final data = doc.data() as Map<String, dynamic>? ?? {};
+                return Tindercard(
+                  storyId: doc.id,
+                  title: data['description'] ?? "No Title",
+                  content: data['context'] ?? "No story available",
+                );
+              }).toList();
 
-          return Column(
-            children: [
-              const SizedBox(height: 20),
-              const Center(
-                child:
-                    Icon(Icons.menu_book, size: 80, color: Colors.blueAccent),
-              ),
-              const SizedBox(height: 20),
-              Expanded(
-                child: SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.75,
-                  width: MediaQuery.of(context).size.width * 0.9,
-                  child: TindercardView(stories: stories),
-                ),
-              ),
-            ],
-          );
-        },
+              return Column(
+                children: [
+                  const SizedBox(height: 100),
+                  
+                  
+                  Expanded(
+                    child: SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.75,
+                      width: MediaQuery.of(context).size.width * 0.9,
+                      child: TindercardView(stories: stories),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
       ),
     );
   }

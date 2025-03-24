@@ -38,8 +38,18 @@ class TindercardView extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
-              border: Border.fromBorderSide(BorderSide(color: Colors.black)),
-              color: Colors.blueAccent,
+              gradient: LinearGradient(
+                colors: [Colors.blueAccent, Colors.deepPurpleAccent],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 10,
+                  offset: Offset(0, 5),
+                ),
+              ],
             ),
             child: Center(
               child: Text(
