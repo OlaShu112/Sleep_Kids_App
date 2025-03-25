@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SleepData {
   String sleepId; // Changed to String to match Firestore ID format
-  String childId; // Changed to match Firebase schema
+ 
   List<String>? awakeningsId;
   DateTime date;
   DateTime bedtime;
@@ -14,7 +14,6 @@ class SleepData {
 
   SleepData({
     required this.sleepId,
-    required this.childId,
     required this.date,
     required this.bedtime,
     this.awakeningsId,
@@ -30,7 +29,7 @@ class SleepData {
     final data = doc.data() as Map<String, dynamic>? ?? {};
     return SleepData(
       sleepId: doc.id,
-      childId: data['child_id'] ?? '',
+
       date: (data['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
       awakeningsId: data['awakeningsId'] != null
           ? List<String>.from(data['awakeningsId'])
@@ -50,7 +49,7 @@ class SleepData {
   factory SleepData.fromMap(Map<String, dynamic> map, {String? sleepId}) {
     return SleepData(
       sleepId: sleepId ?? '',
-      childId: map['child_id'] ?? '',
+
       awakeningsId: map['awakeningsId'] != null
           ? List<String>.from(map['awakeningsId'])
           : null,
@@ -68,7 +67,7 @@ class SleepData {
   // Convert the SleepData instance to a Firestore-compatible map
   Map<String, dynamic> toMap() {
     return {
-      'child_id': childId, // Matches Firebase foreign key
+
       'date': Timestamp.fromDate(date),
       'sleepDuration': sleepDuration,
       'awakeningsId': awakeningsId ?? [],
