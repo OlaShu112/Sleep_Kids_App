@@ -20,6 +20,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:sleep_kids_app/core/models/goals_model.dart';
+import 'package:sleep_kids_app/core/models/sleep_data_model.dart';
 import 'package:sleep_kids_app/core/models/user_model.dart';
 import 'package:sleep_kids_app/core/models/child_profile_model.dart';
 import 'package:sleep_kids_app/core/models/issue_model.dart';
@@ -107,6 +108,29 @@ Future<Goal?> fetchGoalForChild(String childId) async {
   await FirebaseFirestore.instance.collection('child_profiles').doc(childId).delete();
 }
 
+Future<List<SleepData>> getChildSleepData(List<String> sleepId) async {
+  try {
+    if (sleepId.isEmpty) {
+      print("❌ No sleep data linked to this child.");
+      return [];
+    }
+
+    print("🚀 Fetching sleep data: ${sleepId.join(', ')}");
+
+    QuerySnapshot querySnapshot = await _db
+        .collection('sleep_data')
+        .where(FieldPath.documentId, whereIn: sleepId) // ✅ Fetch issues by ID
+        .get();
+
+    print("✅ Firestore returned ${querySnapshot.docs.length} sleep data.");
+    return querySnapshot.docs
+        .map((doc) => SleepData.fromDocument(doc))
+        .toList();
+  } catch (e) {
+    print("❌ Error Fetching sleep data: $e");
+    return [];
+  }
+}
 
 
 

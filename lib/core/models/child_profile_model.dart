@@ -5,8 +5,7 @@ class ChildProfile {
   String childId;
   String childName;
   List<String>? issueId;
-  List<String>? sleepId; //multiple issueId for a child and is optional
-  List<String>? awakeningsId;
+  List<String>? sleepId; //multiple sleepId for a child and is optional
   DateTime dateOfBirth;
   String? profileImageUrl;
   List<String> guardianId;
@@ -16,7 +15,6 @@ class ChildProfile {
     required this.childName,
     this.issueId,
     this.sleepId,
-    this.awakeningsId,
     required this.dateOfBirth,
     this.profileImageUrl,
     required this.guardianId,
@@ -24,22 +22,26 @@ class ChildProfile {
 
   // Factory constructor to create a ChildProfile from Firestore document snapshot
   // Factory constructor to create a ChildProfile from Firestore document snapshot
-  factory ChildProfile.fromDocument(DocumentSnapshot doc) {
-    final data = doc.data() as Map<String, dynamic>;
+factory ChildProfile.fromDocument(DocumentSnapshot doc) {
+  final data = doc.data() as Map<String, dynamic>;
 
-    return ChildProfile(
-      childId: doc.id,
-      childName: data['childName'] ?? 'Unknown',
-      issueId: _getListFromField(data['issueId']),
-      sleepId: _getListFromField(data['sleepId']),
-      awakeningsId: _getListFromField(data['awakeningsId']),
-      dateOfBirth: _getDateFromField(data['dateOfBirth']),
-      profileImageUrl: data['profileImageUrl'],
-      guardianId: data['guardianId'] != null
-          ? List<String>.from(data['guardianId'])
-          : [],
-    );
-  }
+  // Print the fetched data to inspect the values
+  print('Fetched data for guardianId: ${data['guardianId']}');
+  print('Fetched data for issueId: ${data['issueId']}');
+  print('Fetched data for sleepId: ${data['sleepId']}');
+
+  // Handle null fields and ensure that we always work with a valid list or a default value
+  return ChildProfile(
+    childId: doc.id,
+    childName: data['childName'] ?? 'Unknown', // Default to 'Unknown' if childName is null
+    issueId: _getListFromField(data['issueId']),
+    sleepId: _getListFromField(data['sleepId']),
+    dateOfBirth: _getDateFromField(data['dateOfBirth']),
+    profileImageUrl: data['profileImageUrl'] ?? '', // Default to empty string if profileImageUrl is null
+    guardianId: _getListFromField(data['guardianId']),
+  );
+}
+
 
 // A helper method to handle both Timestamp and String for Date
   static DateTime _getDateFromField(dynamic field) {
@@ -60,15 +62,18 @@ class ChildProfile {
   }
 
 // A helper method to handle Lists and Strings for fields that should be lists of Strings
-  static List<String> _getListFromField(dynamic field) {
-    if (field is List) {
-      // Convert all elements to strings safely
-      return field.map((e) => e.toString()).toList();
-    } else if (field is String) {
-      return [field]; // Wrap single string in a list
-    }
-    return []; // Return an empty list if field is null or another type
+static List<String> _getListFromField(dynamic field) {
+  if (field is List) {
+    // If it's a List, make sure all elements are strings
+    return List<String>.from(field.map((e) => e.toString()));
+  } else if (field is String) {
+    // If it's a single String, return it as a list with one element
+    return [field];
   }
+  // If it's neither a List nor String, return an empty list
+  return [];
+}
+
 
   // Method to convert ChildProfile to a map for Firestore storage
   Map<String, dynamic> toMap() {
@@ -76,7 +81,6 @@ class ChildProfile {
       'childName': childName,
       'issueId': issueId ?? [],
       'sleepId': sleepId ?? [],
-      'awakeningsId': awakeningsId ?? [], // Fixed this line
       'dateOfBirth': Timestamp.fromDate(dateOfBirth),
       'profileImageUrl': profileImageUrl ?? '',
       'guardianId': guardianId,

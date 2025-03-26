@@ -17,10 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   String email = '';
   String password = '';
-  bool _isLoading = false; // To manage loading state
-
-  // Firebase Authentication Instance
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  bool _isLoading = false;
 
   // 🔹 Login Function
   Future<void> _loginUser() async {
@@ -100,71 +97,171 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text('Login'),
-        centerTitle: true,
-        backgroundColor: Colors.blue,
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Welcome Back',
-                style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue),
-              ),
-              SizedBox(height: 20),
-              _buildTextField(
-                  'Email Address', Icons.email, (value) => email = value,
-                  isEmail: true),
-              _buildTextField(
-                  'Password', Icons.lock, (value) => password = value,
-                  isPassword: true),
-              SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading
-                      ? null
-                      : _loginUser, // Disable button when loading
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 15),
-                    backgroundColor: Colors.blue,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30)),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF56CCF2), Color(0xFF2F80ED)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Card(
+              elevation: 8,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        "Welcome Back 👋",
+                        style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF2F80ED)),
+                      ),
+                      const SizedBox(height: 10),
+                      const Text("Login to continue", style: TextStyle(fontSize: 16, color: Colors.grey)),
+                      const SizedBox(height: 20),
+
+                      // 🔹 Email Field
+                      _buildTextField("Email Address", Icons.email, (value) => email = value, isEmail: true),
+
+                      // 🔹 Password Field
+                      _buildTextField("Password", Icons.lock, (value) => password = value, isPassword: true),
+
+                      // 🔹 Forgot Password Link
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: _resetPassword,
+                          child: const Text("Forgot Password?", style: TextStyle(color: Color(0xFF2F80ED))),
+                        ),
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      // 🔹 Login Button
+                      _buildLoginButton(),
+
+                      const SizedBox(height: 10),
+
+                      // 🔹 Sign Up Link
+                      TextButton(
+                        onPressed: () {
+                          context.go('/signup');
+                        },
+                        child: const Text(
+                          "Don't have an account? Sign Up",
+                          style: TextStyle(color: Color(0xFF2F80ED), fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
                   ),
-                  child: _isLoading
-                      ? CircularProgressIndicator(
-                          color: Colors.white) // Show loading indicator
-                      : Text('Login',
-                          style: TextStyle(fontSize: 18, color: Colors.white)),
                 ),
               ),
-              SizedBox(height: 10),
-              Center(
-                child: TextButton(
-                  onPressed: () {
-                    context.go('/signup'); // Navigate to SignUp screen
-                  },
-                  child: Text("Don't have an account? Sign Up",
-                      style: TextStyle(color: Colors.blue)),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 
+  // 🔹 Fancy TextField
+  Widget _buildTextField(String label, IconData icon, Function(String) onChanged,
+      {bool isPassword = false, bool isEmail = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Container(
+        decoration: BoxDecoration(
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 5, offset: const Offset(0, 3))],
+        ),
+        child: TextFormField(
+          obscureText: isPassword,
+          keyboardType: isEmail ? TextInputType.emailAddress : TextInputType.text,
+          decoration: InputDecoration(
+            labelText: label,
+            prefixIcon: Icon(icon, color: Color(0xFF2F80ED)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            filled: true,
+            fillColor: Colors.white,
+          ),
+          onChanged: onChanged,
+          validator: (value) {
+            if (value == null || value.isEmpty) return 'This field is required';
+            if (isEmail && !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) return 'Enter a valid email';
+            if (isPassword && value.length < 6) return 'Password must be at least 6 characters';
+            return null;
+          },
+        ),
+    return GestureDetector(
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          title: Text('Login'),
+          centerTitle: true,
+          backgroundColor: Colors.blue,
+        ),
+        body: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Welcome Back',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blue),
+                ),
+                SizedBox(height: 20),
+                _buildTextField('Email Address', Icons.email, (value) {
+                  setState(() {
+                    email = value;
+                  });
+                }, focusNode: _emailFocus, isEmail: true),
+                _buildTextField('Password', Icons.lock, (value) {
+                  setState(() {
+                    password = value;
+                  });
+                }, focusNode: _passwordFocus, isPassword: true),
+                SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _loginUser,
+                    style: ElevatedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 15),
+                      backgroundColor: Colors.blue,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                    ),
+                    child: _isLoading
+                        ? CircularProgressIndicator(color: Colors.white)
+                        : Text('Login', style: TextStyle(fontSize: 18, color: Colors.white)),
+                  ),
+                ),
+                SizedBox(height: 10),
+                Center(
+                  child: TextButton(
+                    onPressed: () {
+                      context.go('/signup');
+                    },
+                    child: Text("Don't have an account? Sign Up", style: TextStyle(color: Colors.blue)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 🔹 Reusable Text Field Widget
   Widget _buildTextField(
       String label, IconData icon, Function(String) onChanged,
       {bool isPassword = false, bool isEmail = false}) {
@@ -189,6 +286,7 @@ class _LoginScreenState extends State<LoginScreen> {
             return 'Password must be at least 6 characters';
           return null;
         },
+
       ),
     );
   }
