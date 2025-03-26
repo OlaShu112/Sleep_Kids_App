@@ -6,7 +6,7 @@ import 'package:sleep_kids_app/core/models/sleep_data_model.dart';
 import 'dart:async';
 import 'package:intl/intl.dart';
 import 'package:sleep_kids_app/services/firebase_service.dart';
-import 'package:sleep_kids_app/core/models/awakenings_model.dart'; // Add import for AwakeningModel
+import 'package:sleep_kids_app/core/models/awakenings_model.dart';
 
 class SleepTrackingScreen extends StatefulWidget {
   const SleepTrackingScreen({super.key});
@@ -19,41 +19,41 @@ class _SleepTrackingScreenState extends State<SleepTrackingScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseService _firebaseService = FirebaseService();
   bool _isDarkMode = false;
-  bool _isSleepTimerRunning = false;
-  bool _isAwakeningTimerRunning = false;
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   List<ChildProfile> children = [];
 
-  late Timer _sleepTimer;
-  late Timer _awakeningTimer;
-  int _sleepDuration = 0; // in seconds
-  int _awakeningDuration = 0; // in seconds
+  // Independent timers and states for each child
+  Map<String, Timer?> _sleepTimers = {};
+  Map<String, Timer?> _awakeningTimers = {};
+  Map<String, bool> _isSleepTimerRunning = {};
+  Map<String, bool> _isAwakeningTimerRunning = {};
+  Map<String, double> _sleepDurations = {}; // Updated to double
+  Map<String, double> _awakeningDurations = {}; // Updated to double
 
-  DateTime _bedtime = DateTime.now(); // Store bedtime
-  DateTime _wakeUpTime = DateTime.now(); // Store wake-up time
-  DateTime _awakeningTime = DateTime.now();
-  DateTime _awakeningsEnd = DateTime.now(); // Store awakening time
-  String _formattedBedtime = "Not set"; // Store formatted bedtime string
-  String _formattedWakeUpTime =
-      "Not set"; // Store formatted wake-up time string
-  String _formattedAwakenings = "Not set";
-  String _formattedAwakeningsEnd = "Not set";
+  // Child specific time management
+  Map<String, DateTime> _bedtimes = {};
+  Map<String, DateTime> _wakeUpTimes = {};
+  Map<String, DateTime> _awakeningTimes = {};
+  Map<String, DateTime> _awakeningsEnds = {};
+
+  // Child specific formatted times
+  Map<String, String> _formattedBedtimes = {};
+  Map<String, String> _formattedWakeUpTimes = {};
+  Map<String, String> _formattedAwakenings = {};
+  Map<String, String> _formattedAwakeningsEnds = {};
 
   @override
   void initState() {
     super.initState();
-    _fetchChildren(); // Fetch children when the screen is loaded
+    _fetchChildren();
   }
 
   // Fetch children data from Firestore
-  //fetch based on userId
   void _fetchChildren() async {
     User? user = _auth.currentUser;
     try {
-      var snapshot = await _firestore
-          .collection('child_profiles') // Fetch from correct collection
-          .get();
+      var snapshot = await _firestore.collection('child_profiles').get();
 
       if (snapshot.docs.isEmpty) {
         print("❌ No children found in Firestore.");
@@ -74,81 +74,104 @@ class _SleepTrackingScreenState extends State<SleepTrackingScreen> {
     }
   }
 
-  // Start or Stop the sleep timer
+  // Start or Stop the sleep timer for each child
   void _toggleSleepTimer(String childId) {
-    if (_isSleepTimerRunning) {
-      _wakeUpTime =
-          DateTime.now(); // Capture the wake-up time when the timer stops
-      _formattedWakeUpTime = DateFormat('yyyy-MM-dd HH:mm:ss')
-          .format(_wakeUpTime); // Format wake-up time
-      _sleepTimer.cancel(); // Stop the sleep timer
-      _isSleepTimerRunning = false;
-      _saveSleepData(childId); // Save the sleep data
+    if (_isSleepTimerRunning[childId] == true) {
+      // Capture the wake-up time when the timer stops
+      _wakeUpTimes[childId] = DateTime.now();
+      _formattedWakeUpTimes[childId] =
+          DateFormat('yyyy-MM-dd HH:mm:ss').format(_wakeUpTimes[childId]!);
+
+      // Stop the sleep timer
+      _sleepTimers[childId]?.cancel();
+      _isSleepTimerRunning[childId] = false;
+
+      // Save the sleep data
+      _saveSleepData(childId);
+
+      // Reset display variables to show data as "Not set" when stopped
+      setState(() {});
     } else {
-      _bedtime = DateTime.now(); // Store bedtime when timer starts
-      _formattedBedtime =
-          DateFormat('yyyy-MM-dd HH:mm:ss').format(_bedtime); // Format for UI
-      _sleepDuration = 0; // Reset sleep duration for the new session
-      _sleepTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      // Start the sleep timer and reset display values
+      _bedtimes[childId] = DateTime.now();
+      _formattedBedtimes[childId] =
+          DateFormat('yyyy-MM-dd HH:mm:ss').format(_bedtimes[childId]!);
+
+      // Reset the displayed sleep duration
+      _sleepDurations[childId] = 0.0; // Reset to zero when the timer starts
+
+      // Start the sleep timer
+      _sleepTimers[childId] = Timer.periodic(Duration(seconds: 1), (timer) {
         setState(() {
-          _sleepDuration++;
+          _sleepDurations[childId] =
+              (_sleepDurations[childId] ?? 0.0) + 1.0; // Increment duration
         });
       });
-      _isSleepTimerRunning = true;
+
+      _isSleepTimerRunning[childId] = true;
+
+      // Reset the displayed wake-up time when timer starts
+      setState(() {
+        _sleepDurations[childId] = 0.0; // Reset the displayed sleep duration
+        _formattedWakeUpTimes[childId] = "Not set";
+        _awakeningDurations[childId] = 0.0;
+        _formattedAwakenings[childId] = "Not set";
+        _formattedAwakeningsEnds[childId] = "Not set";
+      });
     }
-    setState(() {});
   }
 
-  // Start or Stop the awakening timer
+  // Start or Stop the awakening timer for each child
   void _toggleAwakeningTimer(String childId) {
-    if (_isAwakeningTimerRunning) {
-      _awakeningsEnd =
-          DateTime.now(); // Capture the wake-up time when the timer stops
-      _formattedAwakeningsEnd =
-          DateFormat('yyyy-MM-dd HH:mm:ss').format(_awakeningsEnd);
-      _awakeningTimer.cancel(); // Stop the awakening timer
-      _isAwakeningTimerRunning = false;
-      _saveAwakeningData(childId); // Save the awakening data
+    if (_isAwakeningTimerRunning[childId] == true) {
+      _awakeningsEnds[childId] = DateTime.now();
+      _formattedAwakeningsEnds[childId] =
+          DateFormat('yyyy-MM-dd HH:mm:ss').format(_awakeningsEnds[childId]!);
+      _awakeningTimers[childId]?.cancel();
+      _isAwakeningTimerRunning[childId] = false;
+      _saveAwakeningData(childId);
     } else {
-      _awakeningTime =
-          DateTime.now(); // Store awakening end time when timer starts
-      _formattedAwakenings = DateFormat('yyyy-MM-dd HH:mm:ss')
-          .format(_awakeningTime); // Format for UI
-      _awakeningDuration = 0; // Reset awakening duration for the new session
-      _awakeningTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+      _awakeningTimes[childId] = DateTime.now();
+      _formattedAwakenings[childId] =
+          DateFormat('yyyy-MM-dd HH:mm:ss').format(_awakeningTimes[childId]!);
+      _awakeningDurations[childId] = 0.0; // Initialize as double
+
+      _awakeningTimers[childId] = Timer.periodic(Duration(seconds: 1), (timer) {
         setState(() {
-          _awakeningDuration++;
+
+          _awakeningDurations[childId] = (_awakeningDurations[childId] ?? 0.0) +
+              1.0; // Increment as double
         });
       });
-      _isAwakeningTimerRunning = true;
+
+      _isAwakeningTimerRunning[childId] = true;
     }
-    setState(() {});
+    setState(() {
+
+
+    });
   }
 
   // Save sleep data to Firestore
   Future<void> _saveSleepData(String childId) async {
     try {
-      // Create a new document reference for sleep data
       DocumentReference sleepDocRef =
           await _firestore.collection('sleep_data').add({
-        'bedtime': _bedtime,
-        'wakeUpTime': _wakeUpTime,
-        'sleepDuration': _sleepDuration,
+        'bedtime': _bedtimes[childId],
+        'wakeUpTime': _wakeUpTimes[childId],
+        'sleepDuration': _sleepDurations[childId],
         'notes': 'Sleep data recorded',
-        'watchConnected': false, // Assuming watch connection status as false
-        'awakeningsId': [], // Initialize empty list for awakenings
+        'watchConnected': false,
+        'awakeningsId': [],
       });
 
-      // After saving, get the generated sleepId
       String sleepId = sleepDocRef.id;
 
-      // Update the child profile with the new sleepId
       DocumentSnapshot childDoc =
           await _firestore.collection('child_profiles').doc(childId).get();
       if (childDoc.exists) {
         await _firestore.collection('child_profiles').doc(childId).update({
-          'sleepIds': FieldValue.arrayUnion(
-              [sleepId]), // Add sleepId to the child's profile
+          'sleepIds': FieldValue.arrayUnion([sleepId]),
         });
       }
 
@@ -161,45 +184,32 @@ class _SleepTrackingScreenState extends State<SleepTrackingScreen> {
   // Save awakening data to Firestore
   Future<void> _saveAwakeningData(String childId) async {
     try {
-      // Create a new awakening document
       final awakening = AwakeningsModel(
-        awakeningId: DateTime.now()
-            .millisecondsSinceEpoch
-            .toString(), // Generate unique awakening ID
-        duration: _awakeningDuration,
-        wakeUp: _awakeningTime,
-        bedtime: _awakeningTime.subtract(Duration(seconds: _awakeningDuration)),
+        awakeningId: DateTime.now().millisecondsSinceEpoch.toString(),
+        duration: _awakeningDurations[childId]?.toInt() ?? 0,
+        wakeUp: _awakeningTimes[childId]!,
+        bedtime: _awakeningTimes[childId]!
+            .subtract(Duration(seconds: _awakeningDurations[childId]!.toInt())),
       );
 
-      // Save the awakening to Firestore
       DocumentReference awakeningRef =
           await _firestore.collection('awakenings').add(awakening.toMap());
 
-      // Add the awakeningId to the corresponding sleep data document
       DocumentReference sleepDocRef =
           _firestore.collection('sleep_data').doc(childId);
       await sleepDocRef.update({
-        'awakeningsId': FieldValue.arrayUnion([
-          awakeningRef.id
-        ]), // Add the awakeningId to the sleep data document
+        'awakeningsId': FieldValue.arrayUnion([awakeningRef.id]),
       });
 
-      print(
-          "✅ Awakening data saved and added to sleep data with awakeningId: ${awakeningRef.id}");
+      print("✅ Awakening data saved with awakeningId: ${awakeningRef.id}");
     } catch (e) {
       print("❌ Error saving awakening data: $e");
     }
   }
 
-  void _toggleDarkMode() {
-    setState(() {
-      _isDarkMode = !_isDarkMode;
-    });
-  }
-
-  // Format duration to include hours, minutes, and seconds
-  String _formatDuration(int seconds) {
-    final Duration duration = Duration(seconds: seconds);
+  // Format the duration for display as h:m:s
+  String _formatDuration(double seconds) {
+    final Duration duration = Duration(seconds: seconds.toInt());
     final hours = duration.inHours;
     final minutes = duration.inMinutes % 60;
     final secs = duration.inSeconds % 60;
@@ -225,66 +235,44 @@ class _SleepTrackingScreenState extends State<SleepTrackingScreen> {
         title: Text(child.childName,
             style: const TextStyle(fontWeight: FontWeight.bold)),
         children: [
-          // Display the buttons and bedtime when the tile is expanded
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 10.0),
             child: Column(
               children: [
                 Text(
-                  'Bedtime: $_formattedBedtime', // Display formatted bedtime
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
+                    'Bedtime: ${_formattedBedtimes[child.childId] ?? "Not set"}'),
                 SizedBox(height: 10),
                 Text(
-                  'Wake Up Time: $_formattedWakeUpTime', // Display formatted wake-up time
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
+                    'Wake Up Time: ${_formattedWakeUpTimes[child.childId] ?? "Not set"}'),
                 SizedBox(height: 10),
                 Text(
-                  'Duration: ${_formatDuration(_sleepDuration)}', // Display timer with hours, minutes, and seconds
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  'Awakenings: $_formattedAwakenings', // Display awakening time
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
+                    'Duration: ${_formatDuration(_sleepDurations[child.childId] ?? 0.0)}'),
                 SizedBox(height: 10),
                 Text(
-                  'Awakenings End: $_formattedAwakeningsEnd', // Display awakening end time
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
+                    'Awakenings: ${_formattedAwakenings[child.childId] ?? "Not set"}'),
                 SizedBox(height: 10),
                 Text(
-                  'duration: ${_formatDuration(_awakeningDuration)}', // Display awakening duration
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
+                    'Awakenings End: ${_formattedAwakeningsEnds[child.childId] ?? "Not set"}'),
+                SizedBox(height: 10),
+                Text(
+                    'Awakening Duration: ${_formatDuration(_awakeningDurations[child.childId] ?? 0.0)}'),
                 SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        shape: CircleBorder(),
-                        padding: EdgeInsets.all(40),
-                        side: BorderSide(color: Colors.red),
-                      ),
-                      onPressed: () {
-                        _toggleSleepTimer(child.childId);
-                      },
-                      child: Text(_isSleepTimerRunning ? "Stop " : "Start "),
+                      onPressed: () => _toggleSleepTimer(child.childId),
+                      child: Text(_isSleepTimerRunning[child.childId] == true
+                          ? "Stop Sleep"
+                          : "Start Sleep"),
                     ),
                     const SizedBox(width: 10),
                     ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        shape: CircleBorder(),
-                        padding: EdgeInsets.all(40),
-                        side: BorderSide(color: Colors.red),
-                      ),
-                      onPressed: () {
-                        _toggleAwakeningTimer(child.childId);
-                      },
-                      child:
-                          Text(_isAwakeningTimerRunning ? " End" : "Awakening"),
+                      onPressed: () => _toggleAwakeningTimer(child.childId),
+                      child: Text(
+                          _isAwakeningTimerRunning[child.childId] == true
+                              ? "End Awakening"
+                              : "Start Awakening"),
                     ),
                   ],
                 ),
@@ -304,7 +292,11 @@ class _SleepTrackingScreenState extends State<SleepTrackingScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.brightness_6),
-            onPressed: _toggleDarkMode,
+            onPressed: () {
+              setState(() {
+                _isDarkMode = !_isDarkMode;
+              });
+            },
           ),
         ],
       ),
@@ -321,9 +313,7 @@ class _SleepTrackingScreenState extends State<SleepTrackingScreen> {
               ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Add logic to show Add Child Dialog
-        },
+        onPressed: () {},
         child: const Icon(Icons.add),
       ),
     );
