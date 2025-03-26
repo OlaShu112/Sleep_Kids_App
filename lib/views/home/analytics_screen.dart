@@ -42,7 +42,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Sleep Analytics"),
-        backgroundColor: const Color.fromARGB(255, 58, 81, 183),
+        backgroundColor: const Color.fromARGB(255, 35, 104, 174),
         actions: [
           IconButton(
             icon: Icon(
