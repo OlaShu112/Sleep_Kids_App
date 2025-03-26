@@ -16,7 +16,7 @@ class Tindercard {
 class TindercardView extends StatelessWidget {
   final List<Tindercard> stories; // ✅ Accept stories as a parameter
 
-  const TindercardView({Key? key, required this.stories}) : super(key: key);
+  const TindercardView({super.key, required this.stories});
 
   @override
   Widget build(BuildContext context) {
@@ -38,8 +38,18 @@ class TindercardView extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
-              border: Border.fromBorderSide(BorderSide(color: Colors.black)),
-              color: Colors.blueAccent,
+              gradient: LinearGradient(
+                colors: [Colors.blueAccent, Colors.deepPurpleAccent],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 10,
+                  offset: Offset(0, 5),
+                ),
+              ],
             ),
             child: Center(
               child: Text(
@@ -81,7 +91,7 @@ class TindercardView extends StatelessWidget {
 class FullScreenCard extends StatelessWidget {
   final Tindercard card;
 
-  const FullScreenCard({Key? key, required this.card}) : super(key: key);
+  const FullScreenCard({super.key, required this.card});
 
   @override
   Widget build(BuildContext context) {

@@ -1,0 +1,62 @@
+[33mf15902a[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmanage-profile[m[33m)[m Update
+[33m5deda2c[m Update
+[33m6e9002d[m Merged stashed changes after pull
+[33me3d52ad[m Merge pull request #12 from OlaShu112/education
+[33m7c5bde2[m[33m ([m[1;31morigin/education[m[33m)[m education + personalized issue
+[33ma6011d6[m firebase personal info commit
+[33m8429654[m Update Personal Information
+[33mb83ff79[m Commit
+[33mb4b7c71[m[33m ([m[1;31morigin/manage-profile[m[33m)[m Merge pull request #11 from OlaShu112/manage-profile
+[33m81102c5[m remove button add child
+[33m903c3e8[m Merge pull request #10 from OlaShu112/education
+[33m863ff29[m Multiple parents commit
+[33m942b58e[m Merge pull request #9 from OlaShu112/manage-profile
+[33m675e628[m Merge branch 'main' into manage-profile
+[33m29f7ec9[m add remove child button
+[33m04da756[m Merge pull request #8 from OlaShu112/education
+[33m46fca81[m issue_database
+[33ma76ab75[m Merge pull request #7 from OlaShu112/manage-profile
+[33m7f7c080[m change password
+[33m3ba6ae3[m ChangePasswordFunction
+[33ma8dfeec[m commit update
+[33mc3b0b89[m commit
+[33ma29c49e[m child profile commit
+[33m5e65519[m education changes
+[33mfc35e80[m Update made
+[33mc1014bc[m Merge branch 'main' of https://github.com/OlaShu112/Sleep_Kids_App
+[33m92a9e77[m Home screen updated
+[33md094e6f[m Merge pull request #6 from OlaShu112/education
+[33m9517854[m profile image
+[33m9e57298[m Merge pull request #5 from OlaShu112/education
+[33m587b69a[m awakenings_model
+[33mb9ea19e[m Merge branch 'main' of https://github.com/OlaShu112/Sleep_Kids_App
+[33m5404e0e[m week6
+[33m87923b5[m Merge pull request #4 from OlaShu112/Goals
+[33m797c299[m[33m ([m[1;31morigin/Goals[m[33m, [m[1;32mGoals[m[33m)[m add goalsId in child profile
+[33m9f7c154[m Merge pull request #3 from OlaShu112/Goals
+[33m7f804c1[m sleep goals
+[33m48f40bc[m bedtime_complete
+[33m2560a3a[m Merge branch 'main' of https://github.com/OlaShu112/Sleep_Kids_App
+[33m5e14473[m goal, bedtime
+[33mcd8806e[m Merge pull request #2 from OlaShu112/manage-profile
+[33m2025c5f[m Change Details Profile, add database, add child
+[33m0aa324c[m models commit
+[33m7b1a859[m home commit
+[33m5d9703e[m Merge branch 'main' of https://github.com/OlaShu112/Sleep_Kids_App
+[33mdb094a8[m Home Page
+[33m982741b[m Merge pull request #1 from OlaShu112/education
+[33mecd3021[m models update 2
+[33ma6d83f2[m Commit
+[33m1ee0504[m sprintweek1
+[33m0b19751[m Vertical_scroll
+[33m8642611[m education branch
+[33mb1580b7[m Merge branch 'main' of https://github.com/OlaShu112/sleep_kids_app
+[33m975bc3a[m navbar/main.dart commit
+[33m42b2261[m Initial commit
+[33m0b0bd81[m Merge branch 'main' of https://github.com/OlaShu112/sleep_kids_app
+[33m6a97b9e[m Added Codes Update Codes
+[33mbf1706d[m card added
+[33m6c73e5f[m Merge pull request #3 from OlaShu112/Main_layout
+[33m13e6faf[m nav_bar fixed
+[33m391d113[m initialize update
+[33m1c29b4b[m initialize sleep app

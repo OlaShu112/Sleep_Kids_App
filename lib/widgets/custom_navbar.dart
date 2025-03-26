@@ -7,7 +7,7 @@ class CustomNavBar extends StatelessWidget {
       isWatchConnected; // Add a field to receive the watch connection status
 
   // Constructor with the watch connection status passed as a parameter
-  CustomNavBar({required this.selectedIndex, required this.isWatchConnected});
+  const CustomNavBar({super.key, required this.selectedIndex, required this.isWatchConnected});
 
   void _onItemTapped(BuildContext context, int index) {
     switch (index) {

@@ -7,7 +7,7 @@ import 'package:sleep_kids_app/core/models/child_profile_model.dart';
 import 'package:intl/intl.dart';
 
 class PersonalInformationScreen extends StatefulWidget {
-  const PersonalInformationScreen({Key? key}) : super(key: key);
+  const PersonalInformationScreen({super.key});
 
   @override
   _PersonalInformationScreenState createState() =>
@@ -22,6 +22,8 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _childNameController = TextEditingController();
+  final TextEditingController _newParentEmailController = TextEditingController();
+
   DateTime? _selectedDate;
 
   bool isEditing = false;
@@ -81,7 +83,7 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
     }
   }
 
-  // 🔹 Save updated user data
+  // Save updated user data
   void _saveUserData() async {
     User? user = _auth.currentUser;
     if (user != null) {
@@ -119,7 +121,42 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
     }
   }
 
-  // Add Child Profile (from the early code)
+  //function to add parents
+  Future<void> _addParent() async {
+    final String email = _newParentEmailController.text;
+    User? user = _auth.currentUser;
+
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter an email")),
+      );
+      return;
+    }
+
+    try {
+      // Call the FirebaseService method to add the parent to the child profile
+
+      if (user != null) {
+        await _firebaseService.addGuardianToChildren(email, user.uid);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Parent added successfully")),
+        );
+
+        // Close the dialog
+        Navigator.pop(context);
+
+        // Reset the text controller
+        _newParentEmailController.clear();
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: ${e.toString()}")),
+      );
+    }
+  }
+
+  // Add Child Profile
   void _addChild() async {
     User? user = _auth.currentUser;
     if (user != null &&
@@ -157,6 +194,43 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
         SnackBar(content: Text("Please fill in all required fields!")),
       );
     }
+  }
+
+//to display a pop page for user to enter email.
+  void _showAddParentDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Add Parent"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _newParentEmailController,
+                decoration: const InputDecoration(
+                  labelText: "Email",
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.emailAddress,
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Close the dialog
+              },
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: _addParent,
+              child: const Text("Add"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   // 🔹 Remove Child Profile
@@ -210,21 +284,49 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
           ),
           SizedBox(height: 20),
 
-          Align(
-            alignment: Alignment.centerRight,
-            child: ElevatedButton(
-              onPressed: isEditing
-                  ? _saveUserData
-                  : () {
-                      setState(() {
-                        isEditing = true;
-                      });
-                    },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isEditing ? Colors.green : Colors.blue,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Align(
+                alignment: Alignment.center,
+                child: ElevatedButton(
+                  onPressed: _showAddParentDialog,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueAccent,
+                    // Change the color to purple or any color you prefer
+                  ),
+                  child: const Text(
+                    "Add Parent",
+                    style: TextStyle(
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
               ),
-              child: Text(isEditing ? "Save Changes" : "Edit"),
-            ),
+              SizedBox(
+                width: 20,
+              ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: ElevatedButton(
+                  onPressed: isEditing
+                      ? _saveUserData
+                      : () {
+                          setState(() {
+                            isEditing = true;
+                          });
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        isEditing ? Colors.green : Colors.blueAccent,
+                  ),
+                  child: Text(
+                    isEditing ? "Save Changes" : "Edit",
+                    style: TextStyle(color: Colors.black),
+                  ),
+                ),
+              ),
+            ],
           ),
 
           SizedBox(height: 30),
@@ -274,10 +376,6 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
                                   style: TextStyle(
                                       color: Colors.redAccent,
                                       fontWeight: FontWeight.bold),
-                                ),
-                                IconButton(
-                                  icon: Icon(Icons.delete, color: Colors.red),
-                                  onPressed: () => _removeChild(child.childId),
                                 ),
                               ],
                             ),
