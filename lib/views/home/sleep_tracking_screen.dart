@@ -308,6 +308,7 @@ Future<void> _saveAwakeningData(String childId) async {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.deepPurple.withOpacity(0.85),
         title: const Text('Sleep Tracking'),
         actions: [
           IconButton(
@@ -320,17 +321,35 @@ Future<void> _saveAwakeningData(String childId) async {
           ),
         ],
       ),
-      body: Container(
-        padding: const EdgeInsets.all(16.0),
-        child: children.isEmpty
-            ? const Center(child: Text("No children added yet."))
-            : ListView.builder(
-                itemCount: children.length,
-                itemBuilder: (context, index) {
-                  return _buildExpandableChildContainer(children[index]);
-                },
-              ),
+      body: Stack(
+  children: [
+    // 🌌 Night sky background
+    Positioned.fill(
+      child: Image.asset(
+        'assets/images/night_sky.jpeg', // Make sure this path exists
+        fit: BoxFit.cover,
       ),
+    ),
+    // 🌙 Foreground content with padding
+    Container(
+      padding: const EdgeInsets.all(16.0),
+      child: children.isEmpty
+          ? const Center(
+              child: Text(
+                "No children added yet.",
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+            )
+          : ListView.builder(
+              itemCount: children.length,
+              itemBuilder: (context, index) {
+                return _buildExpandableChildContainer(children[index]);
+              },
+            ),
+    ),
+  ],
+),
+
     );
   }
 }

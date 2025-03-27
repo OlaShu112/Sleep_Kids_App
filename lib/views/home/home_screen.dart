@@ -1,15 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart'; // Import for AuthProvider
-import 'package:sleep_kids_app/core/providers/auth_provider.dart'; // Import for AuthProvider
-
-// Import other screens
-// import 'package:sleep_kids_app/views/home/sleep_tracking_screen.dart';
-// import 'package:sleep_kids_app/views/home/analytics_screen.dart';
-// import 'package:sleep_kids_app/views/home/bedtime_stories_screen.dart';
-// import 'package:sleep_kids_app/views/home/profile_screen.dart';
-// import 'package:sleep_kids_app/views/home/achievements_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:sleep_kids_app/core/providers/auth_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,25 +13,23 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String currentTime = '';
-  final GlobalKey<ScaffoldState> _scaffoldKey =
-      GlobalKey<ScaffoldState>(); // Added key for the Scaffold
-  bool isWatchConnected = false; // Track the watch connection status
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool isWatchConnected = false;
 
   @override
   void initState() {
     super.initState();
     _updateTime();
-    _fetchUserData(); // ✅ Fetch user data when home screen loads
+    _fetchUserData();
   }
 
   void _updateTime() {
     setState(() {
       currentTime = DateFormat('hh:mm a').format(DateTime.now());
     });
-    Future.delayed(Duration(seconds: 1), _updateTime);
+    Future.delayed(const Duration(seconds: 1), _updateTime);
   }
 
-  // ✅ Fetch user data
   void _fetchUserData() {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     authProvider.fetchUserData();
@@ -46,72 +37,65 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authProvider =
-        Provider.of<AuthProvider>(context); // Access AuthProvider
+    final authProvider = Provider.of<AuthProvider>(context);
 
     return Scaffold(
-      key: _scaffoldKey, // Use the global key for Scaffold
-      backgroundColor: Colors.transparent,
+      key: _scaffoldKey,
       drawer: CustomNavbar(
-          authProvider: authProvider,
-          isWatchConnected: isWatchConnected,
-          onWatchToggle: _toggleWatchConnection), // Custom navigation drawer
+        authProvider: authProvider,
+        isWatchConnected: isWatchConnected,
+        onWatchToggle: _toggleWatchConnection,
+      ),
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // The background image
-          Image.asset(
-            'assets/images/sleep_kidss.jpg',
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              return Center(
-                child: Text(
-                  'Image not found',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.white,
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF240046), Color(0xFF5A189A)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+          ),
+          SafeArea(
+            child: Column(
+              children: [
+                const SizedBox(height: 30),
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.menu, color: Colors.white, size: 28),
+                      onPressed: () {
+                        _scaffoldKey.currentState?.openDrawer();
+                      },
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                Text(
+                  currentTime,
+                  style: const TextStyle(
+                    fontSize: 80,
                     fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    fontFamily: 'Raleway',
                   ),
                 ),
-              );
-            },
-          ),
-          // The overlay content (current time, Sleep Kids text, and the menu icon)
-          Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              SizedBox(height: 100), // Space for the app bar
-              Text(
-                currentTime,
-                style: TextStyle(
-                  fontSize: 80,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                const SizedBox(height: 10),
+                const Text(
+                  "Sleep Kids",
+                  style: TextStyle(
+                    fontSize: 40,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 1.5,
+                    fontFamily: 'Comfortaa',
+                  ),
                 ),
-                textAlign: TextAlign.center,
-              ),
-              Spacer(),
-              Text(
-                'Sleep Kids',
-                style: TextStyle(
-                  fontSize: 64,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-          // Hamburger menu button
-          Positioned(
-            top: 40, // Position it at the top of the screen
-            left: 20, // Position it to the left
-            child: IconButton(
-              icon: Icon(Icons.menu, color: Colors.white, size: 30),
-              onPressed: () {
-                _scaffoldKey.currentState
-                    ?.openDrawer(); // Open the drawer using the key
-              },
+                const Spacer(),
+                const SizedBox(height: 50),
+              ],
             ),
           ),
         ],
@@ -119,7 +103,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Toggle the watch connection status
   void _toggleWatchConnection() {
     setState(() {
       isWatchConnected = !isWatchConnected;
@@ -142,129 +125,82 @@ class CustomNavbar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      child: Container(
-        color: Colors.black.withOpacity(0.8),
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              padding: EdgeInsets.zero,
-              child: Container(
-                padding: EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Logged in as:", // ✅ Display "Logged in as"
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    Text(
-                      authProvider.lastName ??
-                          'User', // ✅ Fetch and display last name
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    Spacer(),
-                    // Removed logout button here to place it in the list
-                  ],
+      backgroundColor: Colors.deepPurple.shade900.withOpacity(0.95),
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.deepPurple, Colors.purpleAccent],
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Welcome,',
+                  style: TextStyle(color: Colors.white, fontSize: 16),
                 ),
-              ),
+                const SizedBox(height: 4),
+                Text(
+                  authProvider.lastName ?? 'User',
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold),
+                ),
+                const Spacer(),
+                Row(
+                  children: const [
+                    Icon(Icons.nightlight_round, color: Colors.white),
+                    SizedBox(width: 8),
+                    Text("Dream Mode", style: TextStyle(color: Colors.white)),
+                  ],
+                )
+              ],
             ),
-            ListTile(
-              title:
-                  Text('Sleep Tracking', style: TextStyle(color: Colors.white)),
-              onTap: () => context.go('/sleep-tracking'),
-            ),
-            ListTile(
-              title: Text('Analytics', style: TextStyle(color: Colors.white)),
-              onTap: () => context.go('/analytics'),
-            ),
-            ListTile(
-              title: Text('Bedtime Stories',
-                  style: TextStyle(color: Colors.white)),
-              onTap: () => context.go('/bedtime-stories'),
-            ),
-            ListTile(
-              title:
-                  Text('Achievements', style: TextStyle(color: Colors.white)),
-              onTap: () => context.go('/achievements'),
-            ),
-            ListTile(
-              title: Text('Profile', style: TextStyle(color: Colors.white)),
-              onTap: () => context.go('/profile'),
-            ),
-            ListTile(
-              title: Text(
-                'Connect Watch',
-                style: TextStyle(color: Colors.white),
-              ),
-              leading: Icon(
-                isWatchConnected
-                    ? Icons.sync
-                    : Icons
-                        .watch, // Conditional icon based on connection status
-                color: Colors.white,
-              ),
-              onTap: onWatchToggle, // Trigger the watch connection toggle
-            ),
-            Divider(color: Colors.white70), // Adds a visual separator
+          ),
+          _buildNavItem(context, "Sleep Tracking", Icons.bedtime, '/sleep-tracking'),
+          _buildNavItem(context, "Analytics", Icons.bar_chart, '/analytics'),
+          _buildNavItem(context, "Bedtime Stories", Icons.menu_book, '/bedtime-stories'),
+          _buildNavItem(context, "Achievements", Icons.emoji_events, '/achievements'),
+          _buildNavItem(context, "Profile", Icons.person, '/profile'),
+          _buildNavItem(
+            context,
+            isWatchConnected ? "Disconnect Watch" : "Connect Watch",
+            isWatchConnected ? Icons.sync_disabled : Icons.watch,
+            null,
+            onTap: onWatchToggle,
+          ),
+          const Divider(color: Colors.white24),
+          _buildNavItem(context, "Settings", Icons.settings, '/settings'),
+          _buildNavItem(context, "Logout", Icons.logout, '/login', isLogout: true),
+        ],
+      ),
+    );
+  }
 
-            // New menu items added:
-            ListTile(
-              title: Text('Sleep Routine Overview',
-                  style: TextStyle(color: Colors.white)),
-              onTap: () => context.go('/sleep-routine-overview'),
-            ),
-            ListTile(
-              title: Text('Notifications & Reminders',
-                  style: TextStyle(color: Colors.white)),
-              onTap: () => context.go('/notifications-reminders'),
-            ),
-            ListTile(
-              title: Text('Recent Activities',
-                  style: TextStyle(color: Colors.white)),
-              onTap: () => context.go('/recent-activities'),
-            ),
-            ListTile(
-              title: Text('Mood & Sleep Quality Rating',
-                  style: TextStyle(color: Colors.white)),
-              onTap: () => context.go('/mood-sleep-rating'),
-            ),
-            ListTile(
-              title: Text('Parenting Tips & Sleep Education',
-                  style: TextStyle(color: Colors.white)),
-              onTap: () => context.go('/parenting-tips'),
-            ),
-            ListTile(
-              title: Text('Quick Access to Settings',
-                  style: TextStyle(color: Colors.white)),
-              onTap: () => context.go('/settings'),
-            ),
-            Divider(color: Colors.white70), // Adds a visual separator
-
-            // Moved the logout here into the ListTile
-            ListTile(
-              title: Text(
-                'Logout',
-                style: TextStyle(
-                    color: Colors.redAccent, fontWeight: FontWeight.bold),
-              ),
-              leading: Icon(Icons.logout, color: Colors.redAccent),
-              onTap: () {
-                authProvider.logout(); // Call the logout function
-                context.go('/login'); // Navigate to the login screen
-              },
-            ),
-          ],
+  Widget _buildNavItem(BuildContext context, String title, IconData icon,
+      String? routeName, {VoidCallback? onTap, bool isLogout = false}) {
+    return ListTile(
+      leading: Icon(icon, color: isLogout ? Colors.redAccent : Colors.white),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: isLogout ? Colors.redAccent : Colors.white,
+          fontWeight: FontWeight.w600,
         ),
       ),
+      onTap: onTap ??
+          () {
+            if (isLogout) {
+              authProvider.logout();
+            }
+            if (routeName != null) {
+              context.go(routeName);
+            }
+          },
     );
   }
 }

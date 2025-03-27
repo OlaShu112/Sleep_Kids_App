@@ -165,51 +165,80 @@ void _saveGoalData(String childId) async {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Sleep Goals")),
-      body: currentUserId == null
-          ? const Center(child: CircularProgressIndicator())
-          : FutureBuilder<List<Map<String, dynamic>>>(
-              future: _firebaseService.fetchChildren(currentUserId!),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+Widget build(BuildContext context) {
+  return Scaffold(
+    extendBodyBehindAppBar: true,
+    appBar: AppBar(
+      title: const Text("Sleep Goals"),
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      centerTitle: true,
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.deepPurple, Colors.purpleAccent],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+      ),
+    ),
+    body: Stack(
+      children: [
+        Positioned.fill(
+          child: Image.asset(
+            'assets/images/night_sky.jpeg',
+            fit: BoxFit.cover,
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.fromLTRB(16, 100, 16, 16),
+          child: currentUserId == null
+              ? const Center(child: CircularProgressIndicator())
+              : FutureBuilder<List<Map<String, dynamic>>>(
+                  future: _firebaseService.fetchChildren(currentUserId!),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
 
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text("No children found."));
-                }
+                    if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const Center(child: Text("No children found.", style: TextStyle(color: Colors.white)));
+                    }
 
-                final children = snapshot.data!;
+                    final children = snapshot.data!;
 
-                return ListView.separated(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: children.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 10),
-                  itemBuilder: (context, index) {
-                    final child = children[index];
-                    final String childId = child["id"];
-                    final String childName = child["childName"];
+                    return ListView.separated(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      itemCount: children.length,
+                      separatorBuilder: (context, index) => const SizedBox(height: 10),
+                      itemBuilder: (context, index) {
+                        final child = children[index];
+                        final String childId = child["id"];
+                        final String childName = child["childName"];
 
-                    return FutureBuilder<Goal?>(
-                      future: _firebaseService.fetchGoalForChild(childId),
-                      builder: (context, goalSnapshot) {
-                        if (goalSnapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(child: CircularProgressIndicator());
-                        }
+                        return FutureBuilder<Goal?>(
+                          future: _firebaseService.fetchGoalForChild(childId),
+                          builder: (context, goalSnapshot) {
+                            if (goalSnapshot.connectionState == ConnectionState.waiting) {
+                              return const Center(child: CircularProgressIndicator());
+                            }
 
-                        Goal? goal = goalSnapshot.data;
+                            Goal? goal = goalSnapshot.data;
 
-                        return _buildChildCard(childId, childName, goal);
+                            return _buildChildCard(childId, childName, goal);
+                          },
+                        );
                       },
                     );
                   },
-                );
-              },
-            ),
-    );
-  }
+                ),
+        ),
+      ],
+    ),
+  );
+}
+
 
   Widget _buildChildCard(String childId, String childName, Goal? goal) {
     return Container(
