@@ -19,6 +19,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:sleep_kids_app/core/models/awakenings_model.dart';
 import 'package:sleep_kids_app/core/models/goals_model.dart';
 import 'package:sleep_kids_app/core/models/sleep_data_model.dart';
 import 'package:sleep_kids_app/core/models/user_model.dart';
@@ -90,6 +91,28 @@ Future<Goal?> fetchGoalForChild(String childId) async {
       return UserModel.fromMap(doc.data() as Map<String, dynamic>);
     }
     return null;
+  }
+
+    Future<void> addSleepData(SleepData sleepData) async {
+    try {
+      await _db.collection('sleep_data')
+          .doc(sleepData.sleepId)
+          .set(sleepData.toMap());
+      print("sleep data Added Successfully!");
+    } catch (e) {
+      print("❌ Error Adding Child Sleep Data: $e");
+    }
+  }
+
+      Future<void> addAwakenings(AwakeningsModel Awakening) async {
+    try {
+      await _db.collection('awakenings')
+          .doc(Awakening.awakeningId)
+          .set(Awakening.toMap());
+      print("Awakenings Added Successfully!");
+    } catch (e) {
+      print("❌ Error Adding Awakenings: $e");
+    }
   }
 
 
@@ -252,6 +275,34 @@ Future<void> addGuardianToChildren(String parentEmail, String guardianId) async 
     }
   }
 
+  //add awakenings to sleep
+
+Future<void> addAwakeningsToSleepData(String sleepId, List<String> awakeningIdList) async {
+  try {
+    // Fetch the specific 'sleep_data' document using the sleepId
+    DocumentReference sleepDataDocRef = _db.collection('sleep_data').doc(sleepId);
+
+    // Fetch the document
+    DocumentSnapshot sleepDataDoc = await sleepDataDocRef.get();
+
+    if (!sleepDataDoc.exists) {
+      print("❌ No sleep data found for sleepId: $sleepId");
+      return;
+    }
+
+    // Update the 'awakeningsId' array with the list of awakeningIds
+    await sleepDataDocRef.update({
+      'awakeningsId': FieldValue.arrayUnion(awakeningIdList), // Add new awakening IDs to the array
+    });
+
+    print("✅ Awakening IDs added successfully to sleep data with sleepId: $sleepId");
+    
+  } catch (e) {
+    print("❌ Error adding awakenings to sleep data: $e");
+  }
+}
+
+
 
   // Fetch a child's sleep goal data
   Future<DocumentSnapshot?> fetchChildGoal(String childId) async {
@@ -350,6 +401,22 @@ Future<void> addGuardianToChildren(String parentEmail, String guardianId) async 
     return querySnapshot.docs.map((doc) => IssueModel.fromDocument(doc)).toList();
   } catch (e) {
     print("❌ Error Fetching Issues: $e");
+    return [];
+  }
+}
+
+
+Future<List<SleepData>> getSleepDataByChildId(String childId) async {
+  try {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('sleepData')
+        .where('child_id', isEqualTo: childId)
+        //.orderBy('date', descending: false)
+        .get();
+
+    return snapshot.docs.map((doc) => SleepData.fromDocument(doc)).toList();
+  } catch (e) {
+    print("❌ Error fetching sleep data: $e");
     return [];
   }
 }

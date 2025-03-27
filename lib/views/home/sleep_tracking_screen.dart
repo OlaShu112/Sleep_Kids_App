@@ -43,6 +43,9 @@ class _SleepTrackingScreenState extends State<SleepTrackingScreen> {
   Map<String, String> _formattedAwakenings = {};
   Map<String, String> _formattedAwakeningsEnds = {};
 
+  // Temporary list to store awakening IDs
+  Map<String, List<String>> _tempAwakenings = {};
+
   @override
   void initState() {
     super.initState();
@@ -86,10 +89,12 @@ class _SleepTrackingScreenState extends State<SleepTrackingScreen> {
       _sleepTimers[childId]?.cancel();
       _isSleepTimerRunning[childId] = false;
 
-      // Save the sleep data
+      // Save the sleep data and include all the awakening IDs from the temporary list
       _saveSleepData(childId);
 
-      // Reset display variables to show data as "Not set" when stopped
+      // Reset the temporary awakening list
+      _tempAwakenings[childId] = [];
+
       setState(() {});
     } else {
       // Start the sleep timer and reset display values
@@ -129,6 +134,8 @@ class _SleepTrackingScreenState extends State<SleepTrackingScreen> {
           DateFormat('yyyy-MM-dd HH:mm:ss').format(_awakeningsEnds[childId]!);
       _awakeningTimers[childId]?.cancel();
       _isAwakeningTimerRunning[childId] = false;
+      
+
       _saveAwakeningData(childId);
     } else {
       _awakeningTimes[childId] = DateTime.now();
@@ -138,7 +145,7 @@ class _SleepTrackingScreenState extends State<SleepTrackingScreen> {
 
       _awakeningTimers[childId] = Timer.periodic(Duration(seconds: 1), (timer) {
         setState(() {
-
+          _formattedAwakeningsEnds[childId] = "Not Set";
           _awakeningDurations[childId] = (_awakeningDurations[childId] ?? 0.0) +
               1.0; // Increment as double
         });
@@ -146,44 +153,52 @@ class _SleepTrackingScreenState extends State<SleepTrackingScreen> {
 
       _isAwakeningTimerRunning[childId] = true;
     }
-    setState(() {
-
-
-    });
+    setState(() {});
   }
 
-  // Save sleep data to Firestore
-  Future<void> _saveSleepData(String childId) async {
+  // Save sleep data to Firestore, including all stored awakenings' IDs
+  // Save sleep data to Firestore, including all stored awakenings' IDs
+
+
+// In the class where you want to save data (e.g., _SleepTrackingScreenState)
+
+// Save sleep data using Firebase Service
+Future<void> _saveSleepData(String childId) async {
     try {
-      DocumentReference sleepDocRef =
-          await _firestore.collection('sleep_data').add({
-        'bedtime': _bedtimes[childId],
-        'wakeUpTime': _wakeUpTimes[childId],
-        'sleepDuration': _sleepDurations[childId],
-        'notes': 'Sleep data recorded',
-        'watchConnected': false,
-        'awakeningsId': [],
-      });
+      // Create a SleepData object to pass to the Firebase service
+      SleepData sleepData = SleepData(
+        sleepId: DateTime.now().millisecondsSinceEpoch.toString(), // Generate a unique ID
+        bedtime: _bedtimes[childId]!,
+        wakeUpTime: _wakeUpTimes[childId]!,
+        sleepDuration: _sleepDurations[childId]!.toInt(),
+        notes: 'Sleep data recorded',
+        watchConnected: false,
+        awakeningsId: _tempAwakenings[childId] ?? [], // Include all awakening IDs from the temporary list
+      );
 
-      String sleepId = sleepDocRef.id;
+      // Use FirebaseService to add the sleep data
+      await _firebaseService.addSleepData(sleepData);
 
-      DocumentSnapshot childDoc =
-          await _firestore.collection('child_profiles').doc(childId).get();
-      if (childDoc.exists) {
-        await _firestore.collection('child_profiles').doc(childId).update({
-          'sleepIds': FieldValue.arrayUnion([sleepId]),
-        });
-      }
+      // Call addAwakeningsToSleepData to add the awakenings to sleep_data
+      await _firebaseService.addAwakeningsToSleepData(
+        sleepData.sleepId, 
+        _tempAwakenings[childId] ?? []
+      );
 
-      print("✅ Sleep Data saved with sleepId: $sleepId");
+      print("✅ Sleep Data saved successfully and awakenings added to sleep data");
+      
+      // Reset the temporary awakening list after saving
+      _tempAwakenings[childId] = [];
+
     } catch (e) {
       print("❌ Error saving sleep data: $e");
     }
   }
 
-  // Save awakening data to Firestore
-  Future<void> _saveAwakeningData(String childId) async {
+// Save awakening data using Firebase Service
+Future<void> _saveAwakeningData(String childId) async {
     try {
+      // Create an AwakeningsModel object to pass to the Firebase service
       final awakening = AwakeningsModel(
         awakeningId: DateTime.now().millisecondsSinceEpoch.toString(),
         duration: _awakeningDurations[childId]?.toInt() ?? 0,
@@ -192,20 +207,23 @@ class _SleepTrackingScreenState extends State<SleepTrackingScreen> {
             .subtract(Duration(seconds: _awakeningDurations[childId]!.toInt())),
       );
 
-      DocumentReference awakeningRef =
-          await _firestore.collection('awakenings').add(awakening.toMap());
+      // Use FirebaseService to add the awakening data
+      await _firebaseService.addAwakenings(awakening);
 
-      DocumentReference sleepDocRef =
-          _firestore.collection('sleep_data').doc(childId);
-      await sleepDocRef.update({
-        'awakeningsId': FieldValue.arrayUnion([awakeningRef.id]),
-      });
+      // Store the awakening ID temporarily in the list
+      if (_tempAwakenings[childId] == null) {
+        _tempAwakenings[childId] = [];
+      }
+      _tempAwakenings[childId]?.add(awakening.awakeningId);
 
-      print("✅ Awakening data saved with awakeningId: ${awakeningRef.id}");
+      print("✅ Awakening data saved with awakeningId: ${awakening.awakeningId}");
+      
     } catch (e) {
       print("❌ Error saving awakening data: $e");
     }
   }
+
+
 
   // Format the duration for display as h:m:s
   String _formatDuration(double seconds) {
@@ -301,7 +319,6 @@ class _SleepTrackingScreenState extends State<SleepTrackingScreen> {
         ],
       ),
       body: Container(
-        color: _isDarkMode ? Colors.black : Colors.white,
         padding: const EdgeInsets.all(16.0),
         child: children.isEmpty
             ? const Center(child: Text("No children added yet."))
@@ -311,10 +328,6 @@ class _SleepTrackingScreenState extends State<SleepTrackingScreen> {
                   return _buildExpandableChildContainer(children[index]);
                 },
               ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: const Icon(Icons.add),
       ),
     );
   }
