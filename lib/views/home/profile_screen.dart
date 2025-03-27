@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:sleep_kids_app/views/home/change_password.dart';
 import 'package:sleep_kids_app/views/home/personal_information_screen.dart';
@@ -20,7 +19,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   String lastName = "";
   String email = "";
-  String profileImageUrl = ""; // ✅ Fixed missing initialization
+  String profileImageUrl = "";
 
   @override
   void initState() {
@@ -28,7 +27,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _fetchUserData();
   }
 
-  // 🔹 Fetch user data from Firestore
   void _fetchUserData() async {
     User? user = _auth.currentUser;
     if (user != null) {
@@ -38,139 +36,94 @@ class _ProfileScreenState extends State<ProfileScreen> {
         setState(() {
           lastName = userDoc.get('lastName') ?? 'Unknown';
           email = userDoc.get('email') ?? 'No Email';
-          profileImageUrl = userDoc.get('profileImageUrl') ?? ""; // ✅ Fixed missing profile image
+          profileImageUrl = userDoc.get('profileImageUrl') ?? "";
         });
       }
-    }
-  }
-
-  // 🔹 Pick and Upload Profile Image
-  Future<void> _pickAndUploadImage() async {
-    final picker = ImagePicker();
-    final XFile? pickedImage = await picker.pickImage(source: ImageSource.gallery);
-
-    if (pickedImage == null) return;
-
-    File imageFile = File(pickedImage.path);
-    await _uploadImageToFirebase(imageFile);
-  }
-
-  // 🔹 Upload Image to Firebase Storage
-  Future<void> _uploadImageToFirebase(File imageFile) async {
-    try {
-      User? user = _auth.currentUser;
-      if (user == null) return;
-
-      String filePath = 'profile_images/${user.uid}.jpg';
-      Reference storageRef = FirebaseStorage.instance.ref().child(filePath);
-
-      UploadTask uploadTask = storageRef.putFile(imageFile);
-      TaskSnapshot snapshot = await uploadTask;
-
-      String downloadURL = await snapshot.ref.getDownloadURL();
-
-      await _firestore.collection('users').doc(user.uid).update({
-        'profileImageUrl': downloadURL,
-      });
-
-      setState(() {
-        profileImageUrl = downloadURL; // ✅ Update UI immediately
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Profile picture updated successfully!")),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to upload profile picture.")),
-      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Profile")),
-      body: ListView(
-        padding: EdgeInsets.all(16),
-        children: [
-          Center(
-            child: Column(
-              children: [
-                // Profile Image (Tap to Upload)
-                GestureDetector(
-                  onTap: _pickAndUploadImage,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(50),
-                    child: profileImageUrl.isNotEmpty
-                        ? Image.network(
-                            profileImageUrl,
-                            width: 100,
-                            height: 100,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Icon(
-                                Icons.person,
-                                size: 80,
-                                color: Colors.deepPurple),
-                          )
-                        : Icon(Icons.person, size: 80, color: Colors.deepPurple),
-                  ),
-                ),
-                SizedBox(height: 10),
-
-                // Display Last Name
-                Text(
-                  lastName.isNotEmpty ? lastName : "No Last Name",
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-
-                // Display Email
-                Text(
-                  email.isNotEmpty ? email : "No Email",
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
-                ),
-              ],
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        title: const Text("My Profile"),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.deepPurple, Colors.purpleAccent],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
           ),
-          SizedBox(height: 20),
-
-          Text("Manage Your Profile",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          SizedBox(height: 20),
-
-          _buildProfileCard(
-            title: "Personal Information",
-            description: "Edit your name, email, and other personal details.",
-            icon: Icons.info_outline,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => PersonalInformationScreen()),
-              );
-            },
+        ),
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFF5F5FF), Colors.white],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
-          _buildProfileCard(
-            title: "Change Password",
-            description: "Update your password for better account security.",
-            icon: Icons.lock_outline,
-            onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => ChangePassword()));
-            },
-          ),
-          _buildProfileCard(
-            title: "Privacy Settings",
-            description: "Manage your privacy preferences and data sharing.",
-            icon: Icons.privacy_tip,
-            onTap: () {},
-          ),
-          _buildProfileCard(
-            title: "Notification Preferences",
-            description: "Choose the types of notifications you want to receive.",
-            icon: Icons.notifications_active,
-            onTap: () {},
-          ),
-        ],
+        ),
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 100, 16, 16),
+          children: [
+            Center(
+              child: CircleAvatar(
+                radius: 55,
+                backgroundColor: Colors.deepPurple.shade100,
+                backgroundImage:
+                    profileImageUrl.isNotEmpty ? NetworkImage(profileImageUrl) : null,
+                child: profileImageUrl.isEmpty
+                    ? const Icon(Icons.person, size: 60, color: Colors.deepPurple)
+                    : null,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Center(
+              child: Column(
+                children: [
+                  Text(
+                    lastName.isNotEmpty ? lastName : "No Last Name",
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    email.isNotEmpty ? email : "No Email",
+                    style: const TextStyle(fontSize: 14, color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 30),
+            const Text("⚙️ Manage Your Profile",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 20),
+            _buildProfileCard(
+              title: "Personal Information",
+              description: "Edit your name, email, and other personal details.",
+              icon: Icons.info_outline,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => PersonalInformationScreen()),
+                );
+              },
+            ),
+            _buildProfileCard(
+              title: "Change Password",
+              description: "Update your password for better account security.",
+              icon: Icons.lock_outline,
+              onTap: () {
+                Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => ChangePassword()));
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -182,15 +135,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required VoidCallback onTap,
   }) {
     return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      margin: EdgeInsets.only(bottom: 16),
-      child: ListTile(
-        title: Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(description),
-        leading: Icon(icon, color: Colors.blue),
-        trailing: Icon(Icons.arrow_forward_ios),
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: const EdgeInsets.only(bottom: 16),
+      shadowColor: Colors.deepPurple.withOpacity(0.2),
+      child: InkWell(
         onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          child: Row(
+            children: [
+              Icon(icon, color: Colors.deepPurple),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16)),
+                    const SizedBox(height: 4),
+                    Text(description,
+                        style: TextStyle(color: Colors.grey.shade600)),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+            ],
+          ),
+        ),
       ),
     );
   }

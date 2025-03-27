@@ -60,7 +60,7 @@ class _BedtimeStoriesScreenState extends State<BedtimeStoriesScreen> {
                 final data = doc.data() as Map<String, dynamic>? ?? {};
                 return Tindercard(
                   storyId: doc.id,
-                  title: data['description'] ?? "No Title",
+                  title: data['title'] ?? "No Title",
                   content: data['context'] ?? "No story available",
                 );
               }).toList();
@@ -73,7 +73,8 @@ class _BedtimeStoriesScreenState extends State<BedtimeStoriesScreen> {
                   Expanded(
                     child: SizedBox(
                       height: MediaQuery.of(context).size.height * 0.75,
-                      width: MediaQuery.of(context).size.width * 0.9,
+                      width: double.infinity, // or just remove width completely if wrapping
+
                       child: TindercardView(stories: stories),
                     ),
                   ),
