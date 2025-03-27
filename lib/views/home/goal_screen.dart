@@ -169,7 +169,7 @@ Widget build(BuildContext context) {
   return Scaffold(
     extendBodyBehindAppBar: true,
     appBar: AppBar(
-      title: const Text("Sleep Goals"),
+      title: const Text("Sleep Goals", style: TextStyle(color: Colors.white),),
       backgroundColor: Colors.transparent,
       elevation: 0,
       centerTitle: true,
@@ -243,8 +243,13 @@ Widget build(BuildContext context) {
   Widget _buildChildCard(String childId, String childName, Goal? goal) {
     return Container(
       padding: const EdgeInsets.all(16),
+      
       decoration: BoxDecoration(
-        color: Colors.blueAccent.withOpacity(0.1),
+        gradient: const LinearGradient(
+        colors: [Colors.deepPurple, Color.fromARGB(255, 149, 115, 155)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
         borderRadius: BorderRadius.circular(15),
       ),
       child: Column(
@@ -252,14 +257,14 @@ Widget build(BuildContext context) {
         children: [
           Text(
             "Child: $childName",
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 18,color: Colors.white, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
 
           if (goal != null) ...[
-            Text("⏰ Wake-up Time: ${goal.wakeUpTime.toIso8601String().split('T')[1].substring(0, 5)}"),
-            Text("🌙 Bedtime: ${goal.bedtime.toIso8601String().split('T')[1].substring(0, 5)}"),
-            Text("📊 Duration: ${goal.duration.toStringAsFixed(1)} hours"),
+            Text("⏰ Wake-up Time: ${goal.wakeUpTime.toIso8601String().split('T')[1].substring(0, 5)}", style: TextStyle(color: Colors.white),),
+            Text("🌙 Bedtime: ${goal.bedtime.toIso8601String().split('T')[1].substring(0, 5)}", style: TextStyle(color: Colors.white),),
+            Text("📊 Duration: ${goal.duration.toStringAsFixed(1)} hours", style: TextStyle(color: Colors.white),),
             
             const SizedBox(height: 10),
           ] else

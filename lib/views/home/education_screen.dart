@@ -74,116 +74,148 @@ class _EducationScreenState extends State<EducationScreen> {
 
 
 @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Sleep Education")),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 🔹 Education Section
-            _cachedEducationList.isEmpty
-                ? const Center(child: CircularProgressIndicator())
-                : ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: _cachedEducationList.length,
-                    itemBuilder: (context, index) {
-                      final education = _cachedEducationList[index];
-                      bool isExpanded = expandedIndex == index;
-
-                      return GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            expandedIndex = isExpanded ? null : index;
-                          });
-                        },
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                          padding: const EdgeInsets.all(16),
-                          margin: const EdgeInsets.only(bottom: 10),
-                          decoration: BoxDecoration(
-                            color: isExpanded ? Colors.teal[300] : Colors.teal[100],
-                            borderRadius: BorderRadius.circular(15),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.3),
-                                blurRadius: 5,
-                                offset: const Offset(3, 3),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                education['title'],
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              AnimatedSize(
-                                duration: const Duration(milliseconds: 300),
-                                curve: Curves.easeInOut,
-                                child: Text(
-                                  education['context'],
-                                  overflow: isExpanded
-                                      ? TextOverflow.visible
-                                      : TextOverflow.ellipsis,
-                                  maxLines: isExpanded ? null : 2,
-                                  style: const TextStyle(fontSize: 16, color: Colors.black54),
-                                ),
-                              ),
-                              const SizedBox(height: 5),
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: Text(
-                                  isExpanded ? "Show Less ▲" : "Read More ▼",
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.blue,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-
-            const SizedBox(height: 20),
-
-            Container(
-              alignment: Alignment.center,
-              padding: EdgeInsets.all(10),
-              
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(15),
-                color: Colors.green,
-              ),
-
-              child: Text("Personalized Advice",
-              
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-              ),),
-            ),
-
-            
-            _buildChildAdvice(),
-          ],
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: const Text("Sleep Education", style: TextStyle(color: Colors.white),),
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      centerTitle: true,
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.deepPurple, Colors.purpleAccent],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
         ),
       ),
-    );
-  }
+    ),
+    body: Stack(
+      children: [
+        // 🔹 Background Image
+        Positioned.fill(
+          child: Image.asset(
+            'assets/images/night_sky.jpeg',
+            fit: BoxFit.cover,
+          ),
+        ),
+
+        // 🔹 Content
+        SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 🔹 Education Section
+              _cachedEducationList.isEmpty
+                  ? const Center(child: CircularProgressIndicator())
+                  : ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _cachedEducationList.length,
+                      itemBuilder: (context, index) {
+                        final education = _cachedEducationList[index];
+                        bool isExpanded = expandedIndex == index;
+
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              expandedIndex = isExpanded ? null : index;
+                            });
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                            padding: const EdgeInsets.all(16),
+                            margin: const EdgeInsets.only(bottom: 10),
+                            decoration: BoxDecoration(
+                              color: isExpanded
+                                  ? Colors.teal[300]?.withOpacity(0.9)
+                                  : Colors.teal[100]?.withOpacity(0.9),
+                              borderRadius: BorderRadius.circular(15),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.3),
+                                  blurRadius: 5,
+                                  offset: const Offset(3, 3),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  education['title'],
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                AnimatedSize(
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                  child: Text(
+                                    education['context'],
+                                    overflow: isExpanded
+                                        ? TextOverflow.visible
+                                        : TextOverflow.ellipsis,
+                                    maxLines: isExpanded ? null : 2,
+                                    style: const TextStyle(
+                                        fontSize: 16, color: Colors.black54),
+                                  ),
+                                ),
+                                const SizedBox(height: 5),
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: Text(
+                                    isExpanded
+                                        ? "Show Less ▲"
+                                        : "Read More ▼",
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+
+              const SizedBox(height: 20),
+
+              Container(
+                alignment: Alignment.center,
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(15),
+                  color: Colors.green.withOpacity(0.9),
+                ),
+                child: const Text(
+                  "Personalized Advice",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      color: Colors.white),
+                ),
+              ),
+
+              const SizedBox(height: 10),
+              _buildChildAdvice(),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 
   // Widget to display child issues and solutions
   Widget _buildChildAdvice() {

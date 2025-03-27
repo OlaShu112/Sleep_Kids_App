@@ -151,20 +151,12 @@ class CustomNavbar extends StatelessWidget {
                       fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
-                Row(
-                  children: const [
-                    Icon(Icons.nightlight_round, color: Colors.white),
-                    SizedBox(width: 8),
-                    Text("Dream Mode", style: TextStyle(color: Colors.white)),
-                  ],
-                )
               ],
             ),
           ),
           _buildNavItem(context, "Sleep Tracking", Icons.bedtime, '/sleep-tracking'),
           _buildNavItem(context, "Analytics", Icons.bar_chart, '/analytics'),
           _buildNavItem(context, "Bedtime Stories", Icons.menu_book, '/bedtime-stories'),
-          _buildNavItem(context, "Achievements", Icons.emoji_events, '/achievements'),
           _buildNavItem(context, "Profile", Icons.person, '/profile'),
           _buildNavItem(
             context,
@@ -174,7 +166,6 @@ class CustomNavbar extends StatelessWidget {
             onTap: onWatchToggle,
           ),
           const Divider(color: Colors.white24),
-          _buildNavItem(context, "Settings", Icons.settings, '/settings'),
           _buildNavItem(context, "Logout", Icons.logout, '/login', isLogout: true),
         ],
       ),

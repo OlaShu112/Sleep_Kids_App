@@ -210,19 +210,19 @@ Widget build(BuildContext context) {
   return Scaffold(
     extendBodyBehindAppBar: true,
     appBar: AppBar(
-      title: const Text("Sleep Analytics"),
-      backgroundColor: Colors.deepPurple.withOpacity(0.8),
+      title: const Text("Analytics Screen", style: TextStyle(color: Colors.white),),
+      backgroundColor: Colors.transparent,
       elevation: 0,
-      actions: [
-        IconButton(
-          icon: Icon(
-              _themeMode == ThemeMode.dark
-                  ? Icons.dark_mode
-                  : Icons.light_mode,
-              color: Colors.white),
-          onPressed: _toggleTheme,
+      centerTitle: true,
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.deepPurple, Colors.purpleAccent],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
         ),
-      ],
+      ),
     ),
     body: Stack(
       children: [
@@ -240,7 +240,7 @@ Widget build(BuildContext context) {
             DropdownButton<String>(
               value: selectedChildId,
               isExpanded: true,
-              style: const TextStyle(fontSize: 16, color: Colors.black),
+              style: const TextStyle(fontSize: 16, color: Colors.white),
               dropdownColor: Colors.white,
               items: childProfiles.map((doc) {
                 return DropdownMenuItem(
