@@ -42,7 +42,7 @@ dependencies:
   logger: ^1.1.0
   fl_chart: ^0.63.0
   flutter_svg: ^0.22.0 
-
+  table_calendar: ^3.2.0
   google_nav_bar: ^5.0.7
   
 

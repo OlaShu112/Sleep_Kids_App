@@ -83,7 +83,7 @@ static List<String> _getListFromField(dynamic field) {
       'sleepId': sleepId ?? [],
       'dateOfBirth': Timestamp.fromDate(dateOfBirth),
       'profileImageUrl': profileImageUrl ?? '',
-      'guardianId': guardianId ?? [],
+      'guardianId': guardianId,
     };
   }
 }

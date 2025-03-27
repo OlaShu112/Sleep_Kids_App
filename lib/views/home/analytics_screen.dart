@@ -5,6 +5,8 @@ import 'package:sleep_kids_app/core/models/sleep_data_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sleep_kids_app/services/firebase_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:table_calendar/table_calendar.dart';
+import 'package:sleep_kids_app/core/models/goals_model.dart';
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
@@ -20,6 +22,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   List<DocumentSnapshot> childProfiles = [];
   String? selectedChildId;
   List<SleepData> sleepDataList = [];
+  Goal? currentGoal;
+
+  Map<DateTime, bool> goalSleepMap = {};
 
   @override
   void initState() {
@@ -45,6 +50,34 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     await prefs.setInt('themeModeIndex', newThemeIndex);
   }
 
+  Future<void> _fetchGoalForSelectedChild() async {
+    if (selectedChildId == null) return;
+
+    final snapshot = await FirebaseFirestore.instance
+        .collection('goals')
+        .where('childId', isEqualTo: selectedChildId)
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isNotEmpty) {
+      setState(() {
+        currentGoal = Goal.fromDocument(snapshot.docs.first);
+      });
+    }
+  }
+
+  Future<void> _fetchSleepForChild() async {
+    if (selectedChildId == null) return;
+
+    final data = await _firebaseService.getSleepDataByChildId(selectedChildId!);
+    await _fetchGoalForSelectedChild();
+
+    setState(() {
+      sleepDataList = data;
+      _populateGoalSleepMap();
+    });
+  }
+
   Future<void> _fetchSleepData() async {
     final user = FirebaseAuth.instance.currentUser;
 
@@ -59,7 +92,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
         if (childProfiles.isNotEmpty) {
           selectedChildId = childProfiles.first.id;
-          await _fetchSleepForSelectedChild();
+          await _fetchSleepForChild();
         }
 
         setState(() {});
@@ -69,22 +102,176 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     }
   }
 
-  Future<void> _fetchSleepForSelectedChild() async {
-    if (selectedChildId == null) return;
+  void _populateGoalSleepMap() {
+    goalSleepMap.clear();
 
-    final data = await _firebaseService.getSleepDataByChildId(selectedChildId!);
+    if (currentGoal == null) return;
 
-    setState(() {
-      sleepDataList = data;
-    });
+    double goalDurationInHours = currentGoal!.duration;
+    DateTime goalBedtime = currentGoal!.bedtime;
+
+    for (var sleepData in sleepDataList) {
+      DateTime date = DateTime(
+        sleepData.bedtime.year,
+        sleepData.bedtime.month,
+        sleepData.bedtime.day,
+      );
+
+      double sleepDurationInHours = sleepData.sleepDuration / 60.0;
+
+      bool meetsBedtime = sleepData.bedtime.hour < goalBedtime.hour ||
+          (sleepData.bedtime.hour == goalBedtime.hour &&
+              sleepData.bedtime.minute < goalBedtime.minute);
+
+      bool meetsDuration = sleepDurationInHours >= goalDurationInHours;
+
+      bool goalMet = meetsDuration && meetsBedtime;
+
+      goalSleepMap[date] = goalMet;
+    }
   }
 
-  List<double> _extractSleepDurations() =>
-      sleepDataList.map((e) => e.sleepDuration.toDouble()).toList();
+Future<void> _showGoalCalendar() async {
+  showDialog(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: const Text('Goal Calendar'),
+      content: SizedBox(
+        width: MediaQuery.of(context).size.width * 0.9,
+        child: SingleChildScrollView( // ✅ Allow scroll if content overflows
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TableCalendar(
+                firstDay: DateTime(2020),
+                lastDay: DateTime(2101),
+                focusedDay: DateTime.now(),
+                calendarFormat: CalendarFormat.month,
+                daysOfWeekVisible: true,
+                headerStyle: const HeaderStyle(formatButtonVisible: false),
+                calendarBuilders: CalendarBuilders(
+                  defaultBuilder: (context, date, _) {
+                    final normalizedDate =
+                        DateTime(date.year, date.month, date.day);
 
-  List<double> _extractAwakenings() => sleepDataList
-      .map((e) => e.notes.isEmpty ? 0.0 : double.tryParse(e.notes) ?? 0)
-      .toList();
+                    if (goalSleepMap.containsKey(normalizedDate)) {
+                      final goalMet = goalSleepMap[normalizedDate]!;
+                      return Container(
+                        margin: const EdgeInsets.all(6.0),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: goalMet ? Colors.green : Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Text(
+                          '${date.day}',
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      );
+                    }
+                    return null;
+                  },
+                  todayBuilder: (context, date, _) {
+                    return Container(
+                      margin: const EdgeInsets.all(6.0),
+                      alignment: Alignment.center,
+                      decoration: const BoxDecoration(
+                        color: Colors.blue,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        '${date.day}',
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 10),
+              _buildCalendarSummary(), 
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Close'),
+        ),
+      ],
+    ),
+  );
+}
+
+
+ Widget _buildCalendarSummary() {
+  final total = goalSleepMap.length;
+  final met = goalSleepMap.values.where((v) => v).length;
+  final percent = total > 0 ? (met / total * 100).toStringAsFixed(1) : '0';
+
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+    decoration: BoxDecoration(
+      color: Colors.grey[100],
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Row(
+          children: [
+            Icon(Icons.insert_chart, color: Colors.blue),
+            SizedBox(width: 8),
+            Text(
+              "Sleep Goal Summary",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text("📆 Days Tracked: $total"),
+        Text("✅ Days Goal Met: $met"),
+        Text("📊 Success Rate: $percent%"),
+        const SizedBox(height: 12),
+        const Divider(),
+        const Text(
+          "Legend:",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 6),
+        Row(
+          children: [
+            _buildLegendDot(color: Colors.green),
+            const SizedBox(width: 6),
+            Expanded(child: Text("Achived", overflow: TextOverflow.ellipsis)),
+            const SizedBox(width: 16),
+            _buildLegendDot(color: Colors.red),
+            const SizedBox(width: 6),
+            Expanded(child: Text("Missed", overflow: TextOverflow.ellipsis)),
+            const SizedBox(width: 16),
+            _buildLegendDot(color: Colors.blue),
+            const SizedBox(width: 6),
+            Expanded(child: Text("Today", overflow: TextOverflow.ellipsis)),
+
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
+Widget _buildLegendDot({required Color color}) {
+  return Container(
+    width: 14,
+    height: 14,
+    decoration: BoxDecoration(
+      color: color,
+      shape: BoxShape.circle,
+    ),
+  );
+}
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -109,13 +296,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(10),
         children: [
-          const Text(
-            "Track and Analyze Your Child's Sleep",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-          ),
           const SizedBox(height: 10),
-
           if (childProfiles.isNotEmpty)
             DropdownButton<String>(
               value: selectedChildId,
@@ -129,32 +310,72 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               }).toList(),
               onChanged: (value) async {
                 setState(() => selectedChildId = value);
-                await _fetchSleepForSelectedChild();
+                await _fetchSleepForChild();
               },
             ),
-
           const SizedBox(height: 10),
           _buildAnalyticsCard(
             title: "Sleep Duration",
             description: "Track total hours of sleep each night.",
             icon: Icons.access_time,
-            data: _extractSleepDurations(),
+            data:
+                sleepDataList.map((e) => e.sleepDuration.toDouble()).toList(),
           ),
           _buildAnalyticsCard(
             title: "Sleep Disturbances",
             description: "View trends in awakenings or disturbances.",
             icon: Icons.notifications_active,
-            data: _extractAwakenings(),
+            data: sleepDataList
+                .map((e) =>
+                    e.notes.isEmpty ? 0.0 : double.tryParse(e.notes) ?? 0)
+                .toList(),
           ),
-          const SizedBox(height: 20),
-          const Center(
-            child: Icon(
-              Icons.bar_chart,
-              size: 80,
-              color: Color.fromARGB(255, 71, 58, 183),
-            ),
+          const SizedBox(height: 10),
+          _calendarCard(
+            title: "Goal Calendar",
+            description: "View Goal in Calendar.",
+            onTap: _showGoalCalendar,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _calendarCard({
+    required String title,
+    required String description,
+    VoidCallback? onTap,
+  }) {
+    return Card(
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      margin: const EdgeInsets.only(bottom: 10),
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.calendar_today, color: Colors.blue, size: 40),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 18)),
+                    const SizedBox(height: 5),
+                    Text(description,
+                        style: TextStyle(
+                            color: Colors.grey[600], fontSize: 14)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -170,22 +391,19 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       margin: const EdgeInsets.only(bottom: 10),
       child: ExpansionTile(
-        title: Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
+        title: Text(title,
+            style: const TextStyle(fontWeight: FontWeight.bold)),
         leading: Icon(icon, color: Colors.blue),
         children: <Widget>[
-          ListTile(
-            title: Text(description),
-          ),
+          ListTile(title: Text(description)),
           data.isEmpty
               ? const Padding(
                   padding: EdgeInsets.all(16),
                   child: Center(
                     child: Text(
                       "No data available",
-                      style: TextStyle(color: Colors.redAccent, fontSize: 16),
+                      style:
+                          TextStyle(color: Colors.redAccent, fontSize: 16),
                     ),
                   ),
                 )
@@ -235,7 +453,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                             lineBarsData: [
                               LineChartBarData(
                                 spots: List.generate(data.length, (index) {
-                                  return FlSpot(index.toDouble(), data[index]);
+                                  return FlSpot(
+                                      index.toDouble(), data[index]);
                                 }),
                                 isCurved: true,
                                 color: Colors.green,
