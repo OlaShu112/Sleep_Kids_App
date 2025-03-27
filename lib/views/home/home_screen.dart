@@ -49,15 +49,18 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF240046), Color(0xFF5A189A)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
+          // 🌌 Background image
+          Image.asset(
+            'assets/images/sleep_kidss.jpg',
+            fit: BoxFit.cover,
           ),
+
+          // 💫 Optional overlay for readability
+          Container(
+            color: Colors.black.withOpacity(0.2),
+          ),
+
+          // 🌙 Content
           SafeArea(
             child: Column(
               children: [
