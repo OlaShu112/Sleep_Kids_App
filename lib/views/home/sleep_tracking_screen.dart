@@ -308,19 +308,20 @@ Future<void> _saveAwakeningData(String childId) async {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.deepPurple.withOpacity(0.85),
-        title: const Text('Sleep Tracking'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.brightness_6),
-            onPressed: () {
-              setState(() {
-                _isDarkMode = !_isDarkMode;
-              });
-            },
+      title: const Text("Sleep Tracking", style: TextStyle(color: Colors.white),),
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      centerTitle: true,
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.deepPurple, Colors.purpleAccent],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-        ],
+        ),
       ),
+    ),
       body: Stack(
   children: [
     // 🌌 Night sky background

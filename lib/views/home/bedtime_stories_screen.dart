@@ -20,16 +20,20 @@ class _BedtimeStoriesScreenState extends State<BedtimeStoriesScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true, // Allows body to extend behind the AppBar
       appBar: AppBar(
-        elevation: 0, // Removes shadow
-        backgroundColor: Colors.transparent, // Make the AppBar transparent
-        title: const Text(
-          "Bedtime Stories",
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white, // Make the title text white for visibility
+      title: const Text("Bedtime Stories", style: TextStyle(color: Colors.white),),
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      centerTitle: true,
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.deepPurple, Colors.purpleAccent],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
         ),
       ),
+    ),
       body: Stack( // Stack to place background image behind other content
         children: [
           // Image Background that spans the entire screen

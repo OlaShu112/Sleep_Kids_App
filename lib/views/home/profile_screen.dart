@@ -47,7 +47,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text("My Profile"),
+        title: const Text("Profile", style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
@@ -61,69 +61,93 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFF5F5FF), Colors.white],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+      body: Stack(
+        children: [
+          // 🌌 Background image
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/night_sky.jpeg',
+              fit: BoxFit.cover,
+            ),
           ),
-        ),
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 100, 16, 16),
-          children: [
-            Center(
-              child: CircleAvatar(
-                radius: 55,
-                backgroundColor: Colors.deepPurple.shade100,
-                backgroundImage:
-                    profileImageUrl.isNotEmpty ? NetworkImage(profileImageUrl) : null,
-                child: profileImageUrl.isEmpty
-                    ? const Icon(Icons.person, size: 60, color: Colors.deepPurple)
-                    : null,
+
+          // 💫 Gradient overlay for softening the image
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.black26, Colors.transparent],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
               ),
             ),
-            const SizedBox(height: 12),
-            Center(
-              child: Column(
-                children: [
-                  Text(
-                    lastName.isNotEmpty ? lastName : "No Last Name",
-                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    email.isNotEmpty ? email : "No Email",
-                    style: const TextStyle(fontSize: 14, color: Colors.grey),
-                  ),
-                ],
+          ),
+
+          // 🌟 Main content
+          ListView(
+            padding: const EdgeInsets.fromLTRB(16, 100, 16, 16),
+            children: [
+              Center(
+                child: CircleAvatar(
+                  radius: 55,
+                  backgroundColor: Colors.deepPurple.shade100,
+                  backgroundImage: profileImageUrl.isNotEmpty
+                      ? NetworkImage(profileImageUrl)
+                      : null,
+                  child: profileImageUrl.isEmpty
+                      ? const Icon(Icons.person, size: 60, color: Colors.deepPurple)
+                      : null,
+                ),
               ),
-            ),
-            const SizedBox(height: 30),
-            const Text("⚙️ Manage Your Profile",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 20),
-            _buildProfileCard(
-              title: "Personal Information",
-              description: "Edit your name, email, and other personal details.",
-              icon: Icons.info_outline,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => PersonalInformationScreen()),
-                );
-              },
-            ),
-            _buildProfileCard(
-              title: "Change Password",
-              description: "Update your password for better account security.",
-              icon: Icons.lock_outline,
-              onTap: () {
-                Navigator.push(
-                    context, MaterialPageRoute(builder: (context) => ChangePassword()));
-              },
-            ),
-          ],
-        ),
+              const SizedBox(height: 12),
+              Center(
+                child: Column(
+                  children: [
+                    Text(
+                      lastName.isNotEmpty ? lastName : "No Last Name",
+                      style: const TextStyle(
+                          fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+                    Text(
+                      email.isNotEmpty ? email : "No Email",
+                      style: const TextStyle(fontSize: 14, color: Colors.white70),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 30),
+              const Text(
+                "⚙️ Manage Your Profile",
+                style: TextStyle(
+                    fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+              const SizedBox(height: 20),
+              _buildProfileCard(
+                title: "Personal Information",
+                description: "Edit your name, email, and other personal details.",
+                icon: Icons.info_outline,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => PersonalInformationScreen()),
+                  );
+                },
+              ),
+              _buildProfileCard(
+                title: "Change Password",
+                description: "Update your password for better account security.",
+                icon: Icons.lock_outline,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ChangePassword()),
+                  );
+                },
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -135,6 +159,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required VoidCallback onTap,
   }) {
     return Card(
+      color: Colors.white.withOpacity(0.85),
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       margin: const EdgeInsets.only(bottom: 16),
@@ -157,7 +182,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             fontWeight: FontWeight.bold, fontSize: 16)),
                     const SizedBox(height: 4),
                     Text(description,
-                        style: TextStyle(color: Colors.grey.shade600)),
+                        style: TextStyle(color: Colors.grey.shade800)),
                   ],
                 ),
               ),
