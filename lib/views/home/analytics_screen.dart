@@ -205,98 +205,112 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.deepPurple.shade50,
-      appBar: AppBar(
-        title: const Text("Sleep Analytics"),
-        backgroundColor: Colors.deepPurple,
-        actions: [
-          IconButton(
-            icon: Icon(
-                _themeMode == ThemeMode.dark
-                    ? Icons.dark_mode
-                    : Icons.light_mode,
-                color: Colors.white),
-            onPressed: _toggleTheme,
+ @override
+Widget build(BuildContext context) {
+  return Scaffold(
+    extendBodyBehindAppBar: true,
+    appBar: AppBar(
+      title: const Text("Sleep Analytics"),
+      backgroundColor: Colors.deepPurple.withOpacity(0.8),
+      elevation: 0,
+      actions: [
+        IconButton(
+          icon: Icon(
+              _themeMode == ThemeMode.dark
+                  ? Icons.dark_mode
+                  : Icons.light_mode,
+              color: Colors.white),
+          onPressed: _toggleTheme,
+        ),
+      ],
+    ),
+    body: Stack(
+      children: [
+        // 🌌 Background image
+        Positioned.fill(
+          child: Image.asset(
+            'assets/images/night_sky.jpeg', // Make sure this path is correct
+            fit: BoxFit.cover,
           ),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          DropdownButton<String>(
-            value: selectedChildId,
-            isExpanded: true,
-            style: const TextStyle(fontSize: 16, color: Colors.black),
-            items: childProfiles.map((doc) {
-              return DropdownMenuItem(
-                value: doc.id,
-                child: Text(doc['childName']),
-              );
-            }).toList(),
-            onChanged: (value) async {
-              selectedChildId = value;
-              await _fetchSleepForChild();
-            },
-          ),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                selectedDate != null
-                    ? "Selected Date: ${DateFormat.yMMMd().format(selectedDate!)}"
-                    : "Select a date",
-                style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-              ),
-              IconButton(
-                icon:
-                    const Icon(Icons.calendar_today, color: Colors.deepPurple),
-                onPressed: () async {
-                  DateTime? picked = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime(2020),
-                    lastDate: DateTime(2100),
-                  );
-                  if (picked != null) {
-                    setState(() {
-                      selectedDate = picked;
-                    });
-                  }
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          _buildAnalyticsCard(
-            title: "Sleep Duration",
-            description: "Track total hours of sleep each night.",
-            icon: Icons.bedtime,
-            data: _extractSleepDurations(),
-            sleepDataList: _filteredSleepData,
-            isSleepDuration: true,
-          ),
-          _buildAnalyticsCard(
-            title: "Sleep Disturbances",
-            description: "Awakenings during the night.",
-            icon: Icons.notifications_active,
-            data: _extractAwakenings(),
-            sleepDataList: _filteredSleepData,
-            isSleepDuration: false,
-          ),
-          const SizedBox(height: 10),
-          _calendarCard(
+        ),
+        // 🌙 Main content
+        ListView(
+          padding: const EdgeInsets.fromLTRB(16, 100, 16, 16),
+          children: [
+            DropdownButton<String>(
+              value: selectedChildId,
+              isExpanded: true,
+              style: const TextStyle(fontSize: 16, color: Colors.black),
+              dropdownColor: Colors.white,
+              items: childProfiles.map((doc) {
+                return DropdownMenuItem(
+                  value: doc.id,
+                  child: Text(doc['childName']),
+                );
+              }).toList(),
+              onChanged: (value) async {
+                selectedChildId = value;
+                await _fetchSleepForChild();
+              },
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  selectedDate != null
+                      ? "Selected Date: ${DateFormat.yMMMd().format(selectedDate!)}"
+                      : "Select a date",
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.calendar_today, color: Colors.white),
+                  onPressed: () async {
+                    DateTime? picked = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime(2100),
+                    );
+                    if (picked != null) {
+                      setState(() {
+                        selectedDate = picked;
+                      });
+                    }
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            _buildAnalyticsCard(
+              title: "Sleep Duration",
+              description: "Track total hours of sleep each night.",
+              icon: Icons.bedtime,
+              data: _extractSleepDurations(),
+              sleepDataList: _filteredSleepData,
+              isSleepDuration: true,
+            ),
+            _buildAnalyticsCard(
+              title: "Sleep Disturbances",
+              description: "Awakenings during the night.",
+              icon: Icons.notifications_active,
+              data: _extractAwakenings(),
+              sleepDataList: _filteredSleepData,
+              isSleepDuration: false,
+            ),
+            const SizedBox(height: 10),
+            _calendarCard(
               title: "Goal Calendar",
               description: "Visualize goals on calendar.",
-              onTap: _showGoalCalendar),
-        ],
-      ),
-    );
-  }
+              onTap: _showGoalCalendar,
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
 
   Widget _calendarCard(
       {required String title,
