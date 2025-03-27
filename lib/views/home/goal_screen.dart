@@ -231,7 +231,7 @@ void _saveGoalData(String childId) async {
             Text("⏰ Wake-up Time: ${goal.wakeUpTime.toIso8601String().split('T')[1].substring(0, 5)}"),
             Text("🌙 Bedtime: ${goal.bedtime.toIso8601String().split('T')[1].substring(0, 5)}"),
             Text("📊 Duration: ${goal.duration.toStringAsFixed(1)} hours"),
-            Text("🎯 Complete: ${goal.isCompleted ? '✅' : '❌'}"),
+            
             const SizedBox(height: 10),
           ] else
             const Text("Goal is not set."),

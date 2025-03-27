@@ -7,6 +7,7 @@ import 'package:sleep_kids_app/services/firebase_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:sleep_kids_app/core/models/goals_model.dart';
+import 'package:intl/intl.dart';
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
@@ -23,8 +24,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   String? selectedChildId;
   List<SleepData> sleepDataList = [];
   Goal? currentGoal;
-
   Map<DateTime, bool> goalSleepMap = {};
+  DateTime? selectedDate;
 
   @override
   void initState() {
@@ -52,7 +53,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
   Future<void> _fetchGoalForSelectedChild() async {
     if (selectedChildId == null) return;
-
     final snapshot = await FirebaseFirestore.instance
         .collection('goals')
         .where('childId', isEqualTo: selectedChildId)
@@ -68,10 +68,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
   Future<void> _fetchSleepForChild() async {
     if (selectedChildId == null) return;
-
     final data = await _firebaseService.getSleepDataByChildId(selectedChildId!);
     await _fetchGoalForSelectedChild();
-
     setState(() {
       sleepDataList = data;
       _populateGoalSleepMap();
@@ -80,299 +78,247 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
   Future<void> _fetchSleepData() async {
     final user = FirebaseAuth.instance.currentUser;
-
     if (user != null) {
-      try {
-        final snapshot = await FirebaseFirestore.instance
-            .collection('child_profiles')
-            .where('guardianId', arrayContains: user.uid)
-            .get();
-
-        childProfiles = snapshot.docs;
-
-        if (childProfiles.isNotEmpty) {
-          selectedChildId = childProfiles.first.id;
-          await _fetchSleepForChild();
-        }
-
-        setState(() {});
-      } catch (e) {
-        print("\u274C Error fetching children: $e");
+      final snapshot = await FirebaseFirestore.instance
+          .collection('child_profiles')
+          .where('guardianId', arrayContains: user.uid)
+          .get();
+      childProfiles = snapshot.docs;
+      if (childProfiles.isNotEmpty) {
+        selectedChildId = childProfiles.first.id;
+        await _fetchSleepForChild();
       }
     }
   }
 
   void _populateGoalSleepMap() {
     goalSleepMap.clear();
-
     if (currentGoal == null) return;
-
     double goalDurationInHours = currentGoal!.duration;
     DateTime goalBedtime = currentGoal!.bedtime;
 
     for (var sleepData in sleepDataList) {
-      DateTime date = DateTime(
-        sleepData.bedtime.year,
-        sleepData.bedtime.month,
-        sleepData.bedtime.day,
-      );
-
+      DateTime date = DateTime(sleepData.bedtime.year, sleepData.bedtime.month,
+          sleepData.bedtime.day);
       double sleepDurationInHours = sleepData.sleepDuration / 60.0;
-
-      bool meetsBedtime = sleepData.bedtime.hour < goalBedtime.hour ||
-          (sleepData.bedtime.hour == goalBedtime.hour &&
-              sleepData.bedtime.minute < goalBedtime.minute);
-
+      bool meetsBedtime = sleepData.bedtime.isBefore(goalBedtime);
       bool meetsDuration = sleepDurationInHours >= goalDurationInHours;
-
-      bool goalMet = meetsDuration && meetsBedtime;
-
-      goalSleepMap[date] = goalMet;
+      goalSleepMap[date] = meetsBedtime && meetsDuration;
     }
   }
 
-Future<void> _showGoalCalendar() async {
-  showDialog(
-    context: context,
-    builder: (_) => AlertDialog(
-      title: const Text('Goal Calendar'),
-      content: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.9,
-        child: SingleChildScrollView( // ✅ Allow scroll if content overflows
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TableCalendar(
-                firstDay: DateTime(2020),
-                lastDay: DateTime(2101),
-                focusedDay: DateTime.now(),
-                calendarFormat: CalendarFormat.month,
-                daysOfWeekVisible: true,
-                headerStyle: const HeaderStyle(formatButtonVisible: false),
-                calendarBuilders: CalendarBuilders(
-                  defaultBuilder: (context, date, _) {
-                    final normalizedDate =
-                        DateTime(date.year, date.month, date.day);
+  List<SleepData> get _filteredSleepData {
+    if (selectedDate == null) return sleepDataList;
+    return sleepDataList.where((data) {
+      final date = data.bedtime.toLocal();
+      return date.year == selectedDate!.year &&
+          date.month == selectedDate!.month &&
+          date.day == selectedDate!.day;
+    }).toList();
+  }
 
-                    if (goalSleepMap.containsKey(normalizedDate)) {
-                      final goalMet = goalSleepMap[normalizedDate]!;
-                      return Container(
-                        margin: const EdgeInsets.all(6.0),
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: goalMet ? Colors.green : Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Text(
-                          '${date.day}',
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                      );
-                    }
-                    return null;
-                  },
-                  todayBuilder: (context, date, _) {
-                    return Container(
-                      margin: const EdgeInsets.all(6.0),
-                      alignment: Alignment.center,
-                      decoration: const BoxDecoration(
-                        color: Colors.blue,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Text(
-                        '${date.day}',
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    );
-                  },
+  List<double> _extractSleepDurations() => _filteredSleepData
+      .map((e) => double.parse((e.sleepDuration / 3600).toStringAsFixed(2)))
+      .toList();
+
+  List<double> _extractAwakenings() => _filteredSleepData
+      .map((e) => (e.awakeningsId?.length ?? 0).toDouble())
+      .toList();
+
+  Future<void> _showGoalCalendar() async {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Goal Calendar'),
+        content: SizedBox(
+          width: MediaQuery.of(context).size.width * 0.9,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TableCalendar(
+                  firstDay: DateTime(2020),
+                  lastDay: DateTime(2101),
+                  focusedDay: DateTime.now(),
+                  calendarFormat: CalendarFormat.month,
+                  headerStyle: const HeaderStyle(formatButtonVisible: false),
+                  calendarBuilders: CalendarBuilders(
+                    defaultBuilder: (context, date, _) {
+                      final normalized =
+                          DateTime(date.year, date.month, date.day);
+                      if (goalSleepMap.containsKey(normalized)) {
+                        final met = goalSleepMap[normalized]!;
+                        return _buildDateCell(
+                            date.day, met ? Colors.green : Colors.red);
+                      }
+                      return null;
+                    },
+                    todayBuilder: (context, date, _) =>
+                        _buildDateCell(date.day, Colors.blue),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              _buildCalendarSummary(), 
-            ],
+                const SizedBox(height: 10),
+                _buildCalendarSummary(),
+              ],
+            ),
           ),
         ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Close'),
-        ),
-      ],
-    ),
-  );
-}
-
-
- Widget _buildCalendarSummary() {
-  final total = goalSleepMap.length;
-  final met = goalSleepMap.values.where((v) => v).length;
-  final percent = total > 0 ? (met / total * 100).toStringAsFixed(1) : '0';
-
-  return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-    decoration: BoxDecoration(
-      color: Colors.grey[100],
-      borderRadius: BorderRadius.circular(8),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Row(
-          children: [
-            Icon(Icons.insert_chart, color: Colors.blue),
-            SizedBox(width: 8),
-            Text(
-              "Sleep Goal Summary",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Text("📆 Days Tracked: $total"),
-        Text("✅ Days Goal Met: $met"),
-        Text("📊 Success Rate: $percent%"),
-        const SizedBox(height: 12),
-        const Divider(),
-        const Text(
-          "Legend:",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 6),
-        Row(
-          children: [
-            _buildLegendDot(color: Colors.green),
-            const SizedBox(width: 6),
-            Expanded(child: Text("Achived", overflow: TextOverflow.ellipsis)),
-            const SizedBox(width: 16),
-            _buildLegendDot(color: Colors.red),
-            const SizedBox(width: 6),
-            Expanded(child: Text("Missed", overflow: TextOverflow.ellipsis)),
-            const SizedBox(width: 16),
-            _buildLegendDot(color: Colors.blue),
-            const SizedBox(width: 6),
-            Expanded(child: Text("Today", overflow: TextOverflow.ellipsis)),
-
-          ],
-        ),
-      ],
-    ),
-  );
-}
-
-Widget _buildLegendDot({required Color color}) {
-  return Container(
-    width: 14,
-    height: 14,
-    decoration: BoxDecoration(
-      color: color,
-      shape: BoxShape.circle,
-    ),
-  );
-}
-
-
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Sleep Analytics"),
-        backgroundColor: const Color.fromARGB(255, 35, 104, 174),
         actions: [
-          IconButton(
-            icon: Icon(
-              _themeMode == ThemeMode.dark
-                  ? Icons.dark_mode
-                  : _themeMode == ThemeMode.light
-                      ? Icons.light_mode
-                      : Icons.nightlight_round,
-              color: Colors.white,
-            ),
-            onPressed: _toggleTheme,
-          ),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(10),
-        children: [
-          const SizedBox(height: 10),
-          if (childProfiles.isNotEmpty)
-            DropdownButton<String>(
-              value: selectedChildId,
-              isExpanded: true,
-              items: childProfiles.map((childDoc) {
-                final childName = childDoc['childName'];
-                return DropdownMenuItem<String>(
-                  value: childDoc.id,
-                  child: Text(childName),
-                );
-              }).toList(),
-              onChanged: (value) async {
-                setState(() => selectedChildId = value);
-                await _fetchSleepForChild();
-              },
-            ),
-          const SizedBox(height: 10),
-          _buildAnalyticsCard(
-            title: "Sleep Duration",
-            description: "Track total hours of sleep each night.",
-            icon: Icons.access_time,
-            data:
-                sleepDataList.map((e) => e.sleepDuration.toDouble()).toList(),
-          ),
-          _buildAnalyticsCard(
-            title: "Sleep Disturbances",
-            description: "View trends in awakenings or disturbances.",
-            icon: Icons.notifications_active,
-            data: sleepDataList
-                .map((e) =>
-                    e.notes.isEmpty ? 0.0 : double.tryParse(e.notes) ?? 0)
-                .toList(),
-          ),
-          const SizedBox(height: 10),
-          _calendarCard(
-            title: "Goal Calendar",
-            description: "View Goal in Calendar.",
-            onTap: _showGoalCalendar,
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
           ),
         ],
       ),
     );
   }
 
-  Widget _calendarCard({
-    required String title,
-    required String description,
-    VoidCallback? onTap,
-  }) {
+  Widget _buildDateCell(int day, Color color) {
+    return Container(
+      margin: const EdgeInsets.all(6.0),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+      child: Text('$day', style: const TextStyle(color: Colors.white)),
+    );
+  }
+
+  Widget _buildCalendarSummary() {
+    final total = goalSleepMap.length;
+    final met = goalSleepMap.values.where((v) => v).length;
+    final percent = total > 0 ? (met / total * 100).toStringAsFixed(1) : '0';
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+          color: Colors.grey[100], borderRadius: BorderRadius.circular(8)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("📈 Sleep Goal Summary",
+              style: TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Text("📅 Days Tracked: $total"),
+          Text("✅ Days Met: $met"),
+          Text("🎯 Success Rate: $percent%"),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.deepPurple.shade50,
+      appBar: AppBar(
+        title: const Text("Sleep Analytics"),
+        backgroundColor: Colors.deepPurple,
+        actions: [
+          IconButton(
+            icon: Icon(
+                _themeMode == ThemeMode.dark
+                    ? Icons.dark_mode
+                    : Icons.light_mode,
+                color: Colors.white),
+            onPressed: _toggleTheme,
+          ),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          DropdownButton<String>(
+            value: selectedChildId,
+            isExpanded: true,
+            style: const TextStyle(fontSize: 16, color: Colors.black),
+            items: childProfiles.map((doc) {
+              return DropdownMenuItem(
+                value: doc.id,
+                child: Text(doc['childName']),
+              );
+            }).toList(),
+            onChanged: (value) async {
+              selectedChildId = value;
+              await _fetchSleepForChild();
+            },
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                selectedDate != null
+                    ? "Selected Date: ${DateFormat.yMMMd().format(selectedDate!)}"
+                    : "Select a date",
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+              IconButton(
+                icon:
+                    const Icon(Icons.calendar_today, color: Colors.deepPurple),
+                onPressed: () async {
+                  DateTime? picked = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime(2100),
+                  );
+                  if (picked != null) {
+                    setState(() {
+                      selectedDate = picked;
+                    });
+                  }
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          _buildAnalyticsCard(
+            title: "Sleep Duration",
+            description: "Track total hours of sleep each night.",
+            icon: Icons.bedtime,
+            data: _extractSleepDurations(),
+            sleepDataList: _filteredSleepData,
+            isSleepDuration: true,
+          ),
+          _buildAnalyticsCard(
+            title: "Sleep Disturbances",
+            description: "Awakenings during the night.",
+            icon: Icons.notifications_active,
+            data: _extractAwakenings(),
+            sleepDataList: _filteredSleepData,
+            isSleepDuration: false,
+          ),
+          const SizedBox(height: 10),
+          _calendarCard(
+              title: "Goal Calendar",
+              description: "Visualize goals on calendar.",
+              onTap: _showGoalCalendar),
+        ],
+      ),
+    );
+  }
+
+  Widget _calendarCard(
+      {required String title,
+      required String description,
+      VoidCallback? onTap}) {
     return Card(
       elevation: 3,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      margin: const EdgeInsets.only(bottom: 10),
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.calendar_today, color: Colors.blue, size: 40),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 18)),
-                    const SizedBox(height: 5),
-                    Text(description,
-                        style: TextStyle(
-                            color: Colors.grey[600], fontSize: 14)),
-                  ],
-                ),
-              ),
+              const Icon(Icons.calendar_month, color: Colors.blue, size: 36),
+              const SizedBox(width: 12),
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(title,
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold)),
+                Text(description, style: TextStyle(color: Colors.grey[600])),
+              ])
             ],
           ),
         ),
@@ -385,95 +331,114 @@ Widget _buildLegendDot({required Color color}) {
     required String description,
     required IconData icon,
     required List<double> data,
+    required List<SleepData> sleepDataList,
+    required bool isSleepDuration,
   }) {
     return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      margin: const EdgeInsets.only(bottom: 10),
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: ExpansionTile(
-        title: Text(title,
-            style: const TextStyle(fontWeight: FontWeight.bold)),
-        leading: Icon(icon, color: Colors.blue),
-        children: <Widget>[
-          ListTile(title: Text(description)),
+        leading: Icon(icon, color: Colors.deepPurple),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: Text(description),
+          ),
           data.isEmpty
               ? const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Center(
-                    child: Text(
-                      "No data available",
-                      style:
-                          TextStyle(color: Colors.redAccent, fontSize: 16),
+                  padding: EdgeInsets.all(12),
+                  child: Text("No data available",
+                      style: TextStyle(color: Colors.redAccent)),
+                )
+              : SizedBox(
+                  height: 240,
+                  child: BarChart(
+                    BarChartData(
+                      alignment: BarChartAlignment.spaceAround,
+                      maxY: isSleepDuration
+                          ? 24
+                          : 20, // ✅ Cap to 5 for awakenings
+                      barTouchData: BarTouchData(
+                        enabled: true,
+                        touchTooltipData: BarTouchTooltipData(
+                          tooltipBgColor: Colors.deepPurple,
+                          tooltipMargin: 8,
+                          tooltipRoundedRadius: 8,
+                          getTooltipItem: (group, _, rod, __) {
+                            final index = group.x.toInt();
+                            if (index >= sleepDataList.length) return null;
+                            final data = sleepDataList[index];
+                            return BarTooltipItem(
+                              isSleepDuration
+                                  ? "🛏️ ${DateFormat.jm().format(data.bedtime)}\n"
+                                      "🌞 ${DateFormat.jm().format(data.wakeUpTime)}\n"
+                                      "🕒 ${rod.toY.toStringAsFixed(2)} h"
+                                  : "😴 ${data.awakeningsId?.length ?? 0} awakenings",
+                              const TextStyle(color: Colors.white),
+                            );
+                          },
+                        ),
+                      ),
+                      barGroups: List.generate(data.length, (i) {
+                        return BarChartGroupData(
+                          x: i,
+                          barRods: [
+                            BarChartRodData(
+                              toY: data[i],
+                              borderRadius: BorderRadius.circular(8),
+                              width: 18,
+                              gradient: const LinearGradient(
+                                colors: [
+                                  Colors.deepPurple,
+                                  Colors.purpleAccent
+                                ],
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                              ),
+                            ),
+                          ],
+                        );
+                      }),
+                      titlesData: FlTitlesData(
+                        topTitles: AxisTitles(
+                            sideTitles: SideTitles(showTitles: false)),
+                        rightTitles: AxisTitles(
+                            sideTitles: SideTitles(showTitles: false)),
+                        leftTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            reservedSize: 40,
+                            getTitlesWidget: (value, _) {
+                              if (isSleepDuration) {
+                                return value % 1 == 0
+                                    ? Text("${value.toInt()} h",
+                                        style: const TextStyle(fontSize: 12))
+                                    : const SizedBox();
+                              } else {
+                                return value >= 1 &&
+                                        value <= 5 &&
+                                        value % 1 == 0
+                                    ? Text("${value.toInt()}",
+                                        style: const TextStyle(fontSize: 12))
+                                    : const SizedBox();
+                              }
+                            },
+                          ),
+                        ),
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            getTitlesWidget: (value, _) => Text(
+                                (value.toInt() + 1).toString(),
+                                style: const TextStyle(fontSize: 12)),
+                          ),
+                        ),
+                      ),
+                      gridData: FlGridData(show: true),
+                      borderData: FlBorderData(show: false),
                     ),
                   ),
-                )
-              : Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: SizedBox(
-                        height: 200,
-                        child: BarChart(
-                          BarChartData(
-                            alignment: BarChartAlignment.spaceBetween,
-                            barGroups: List.generate(data.length, (index) {
-                              return BarChartGroupData(
-                                x: index,
-                                barRods: [
-                                  BarChartRodData(
-                                    toY: data[index],
-                                    gradient: const LinearGradient(
-                                      colors: [Colors.blue, Colors.lightBlue],
-                                    ),
-                                    width: 16,
-                                    borderRadius: BorderRadius.zero,
-                                  ),
-                                ],
-                                showingTooltipIndicators: [0],
-                              );
-                            }),
-                            titlesData: FlTitlesData(
-                              leftTitles: AxisTitles(
-                                  sideTitles: SideTitles(showTitles: true)),
-                              bottomTitles: AxisTitles(
-                                  sideTitles: SideTitles(showTitles: true)),
-                            ),
-                            gridData: FlGridData(show: true),
-                            borderData: FlBorderData(show: true),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: SizedBox(
-                        height: 200,
-                        child: LineChart(
-                          LineChartData(
-                            lineBarsData: [
-                              LineChartBarData(
-                                spots: List.generate(data.length, (index) {
-                                  return FlSpot(
-                                      index.toDouble(), data[index]);
-                                }),
-                                isCurved: true,
-                                color: Colors.green,
-                                belowBarData: BarAreaData(show: false),
-                              ),
-                            ],
-                            gridData: FlGridData(show: true),
-                            borderData: FlBorderData(show: true),
-                            titlesData: FlTitlesData(
-                              leftTitles: AxisTitles(
-                                  sideTitles: SideTitles(showTitles: true)),
-                              bottomTitles: AxisTitles(
-                                  sideTitles: SideTitles(showTitles: true)),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
                 ),
         ],
       ),
