@@ -404,4 +404,20 @@ Future<void> addAwakeningsToSleepData(String sleepId, List<String> awakeningIdLi
     return [];
   }
 }
+
+
+Future<List<SleepData>> getSleepDataByChildId(String childId) async {
+  try {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('sleepData')
+        .where('child_id', isEqualTo: childId)
+        //.orderBy('date', descending: false)
+        .get();
+
+    return snapshot.docs.map((doc) => SleepData.fromDocument(doc)).toList();
+  } catch (e) {
+    print("❌ Error fetching sleep data: $e");
+    return [];
+  }
+}
 }
