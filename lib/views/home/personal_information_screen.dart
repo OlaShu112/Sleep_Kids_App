@@ -22,14 +22,14 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _childNameController = TextEditingController();
-  final TextEditingController _newParentEmailController = TextEditingController();
+  final TextEditingController _newParentEmailController =TextEditingController();
 
   DateTime? _selectedDate;
 
   bool isEditing = false;
   List<ChildProfile> children = [];
   List<IssueModel> availableIssue = [];
-  List<String> selectedIssues = []; // ✅ Store selected issues
+  List<String> selectedIssues = [];
 
   @override
   void initState() {
@@ -39,7 +39,6 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
     _fetchIssues();
   }
 
-  // 🔹 Fetch user data from Firestore
   void _fetchUserData() async {
     User? user = _auth.currentUser;
     if (user != null) {
@@ -59,31 +58,19 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
     setState(() {
       availableIssue = fetchedIssues;
     });
-    print("✅ Issues Fetched: ${availableIssue.length}");
   }
 
-  // 🔹 Fetch child profiles from Firestore
   void _fetchChildren() async {
     User? user = _auth.currentUser;
     if (user != null) {
-      print("🚀 Fetching children for user: ${user.uid}");
-
       List<ChildProfile> fetchedChildren =
           await _firebaseService.getChildProfiles(user.uid);
-
       setState(() {
         children = fetchedChildren;
       });
-
-      if (fetchedChildren.isEmpty) {
-        print("❌ No children found.");
-      } else {
-        print("✅ Successfully fetched ${fetchedChildren.length} children.");
-      }
     }
   }
 
-  // Save updated user data
   void _saveUserData() async {
     User? user = _auth.currentUser;
     if (user != null) {
@@ -94,18 +81,15 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
         'firstName': _firstNameController.text,
         'lastName': _lastNameController.text,
       });
-
       setState(() {
         isEditing = false;
       });
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Profile Updated Successfully!")),
       );
     }
   }
 
-  // Show Date Picker for Child's Date of Birth
   Future<void> _pickDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -113,7 +97,6 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
       firstDate: DateTime(2000),
       lastDate: DateTime.now(),
     );
-
     if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
@@ -121,7 +104,6 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
     }
   }
 
-  //function to add parents
   Future<void> _addParent() async {
     final String email = _newParentEmailController.text;
     User? user = _auth.currentUser;
@@ -134,19 +116,12 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
     }
 
     try {
-      // Call the FirebaseService method to add the parent to the child profile
-
       if (user != null) {
         await _firebaseService.addGuardianToChildren(email, user.uid);
-
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Parent added successfully")),
         );
-
-        // Close the dialog
         Navigator.pop(context);
-
-        // Reset the text controller
         _newParentEmailController.clear();
       }
     } catch (e) {
@@ -156,21 +131,16 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
     }
   }
 
-  // Add Child Profile
   void _addChild() async {
     User? user = _auth.currentUser;
     if (user != null &&
         _childNameController.text.isNotEmpty &&
         _selectedDate != null) {
       ChildProfile newChild = ChildProfile(
-        childId: FirebaseFirestore.instance
-            .collection('child_profiles')
-            .doc()
-            .id, // Generate unique ID
+        childId:
+            FirebaseFirestore.instance.collection('child_profiles').doc().id,
         childName: _childNameController.text,
-        issueId: selectedIssues.isNotEmpty
-            ? selectedIssues
-            : [], // store selected issues
+        issueId: selectedIssues,
         sleepId: [],
         dateOfBirth: _selectedDate!,
         profileImageUrl: "",
@@ -178,12 +148,12 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
       );
 
       await _firebaseService.addChildProfile(newChild);
-      _fetchChildren(); // Refresh the listr
+      _fetchChildren();
 
       _childNameController.clear();
       setState(() {
         _selectedDate = null;
-        selectedIssues = []; // Reset issues selection
+        selectedIssues = [];
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -196,36 +166,57 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
     }
   }
 
-//to display a pop page for user to enter email.
+  String calculateAgeDetailed(String dob) {
+    try {
+      final birthDate = DateTime.parse(dob);
+      final now = DateTime.now();
+
+      int years = now.year - birthDate.year;
+      int months = now.month - birthDate.month;
+      int days = now.day - birthDate.day;
+
+      if (days < 0) {
+        months -= 1;
+        final prevMonth = DateTime(now.year, now.month, 0);
+        days += prevMonth.day;
+      }
+      if (months < 0) {
+        years -= 1;
+        months += 12;
+      }
+      return '$years Y, $months M, $days D';
+    } catch (e) {
+      return 'Invalid DOB';
+    }
+  }
+
   void _showAddParentDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
           title: const Text("Add Parent"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: _newParentEmailController,
-                decoration: const InputDecoration(
-                  labelText: "Email",
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.emailAddress,
-              ),
-            ],
+          content: TextField(
+            controller: _newParentEmailController,
+            decoration: const InputDecoration(
+              labelText: "Email",
+              border: OutlineInputBorder(),
+            ),
+            keyboardType: TextInputType.emailAddress,
           ),
           actions: <Widget>[
             TextButton(
-              onPressed: () {
-                Navigator.pop(context); // Close the dialog
-              },
+              onPressed: () => Navigator.pop(context),
               child: const Text("Cancel"),
             ),
-            TextButton(
+            ElevatedButton(
               onPressed: _addParent,
               child: const Text("Add"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueAccent,
+              ),
             ),
           ],
         );
@@ -233,12 +224,10 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
     );
   }
 
-  // 🔹 Remove Child Profile
   void _removeChild(String childId) async {
     try {
       await _firebaseService.removeChildProfile(childId);
-      _fetchChildren(); // Refresh the list after deletion
-
+      _fetchChildren();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Child Removed Successfully!")),
       );
@@ -249,210 +238,193 @@ class _PersonalInformationScreenState extends State<PersonalInformationScreen> {
     }
   }
 
+  void _confirmRemoveChild(String childId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Confirm Deletion"),
+          content: Text("Are you sure you want to remove this child?"),
+          actions: [
+            TextButton(
+              child: Text("Cancel"),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: Text("Delete", style: TextStyle(color: Colors.red)),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _removeChild(childId);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Personal Information")),
+      appBar: AppBar(
+        title: Text("Personal Information"),
+        backgroundColor: Colors.blueAccent,
+        elevation: 0,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text("Personal Details",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          SizedBox(height: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSectionTitle("Personal Details"),
+            _buildTextField("First Name", _firstNameController,
+                readOnly: !isEditing),
+            _buildTextField("Last Name", _lastNameController,
+                readOnly: !isEditing),
+            _buildTextField("Email Address", _emailController, readOnly: true),
+            _buildButtonRow(),
+            const SizedBox(height: 30),
+            _buildSectionTitle("Children"),
+            ..._buildChildCards(),
+            const SizedBox(height: 20),
+            _buildSectionTitle("Add Child"),
+            _buildTextField("Child Name", _childNameController),
+            _buildIssueChips(),
+            _buildDatePickerButton(),
+            _buildAddChildButton(),
+          ],
+        ),
+      ),
+    );
+  }
 
-          TextField(
-            controller: _firstNameController,
-            decoration: InputDecoration(
-                labelText: "First Name", border: OutlineInputBorder()),
-            readOnly: !isEditing,
+  Widget _buildSectionTitle(String title) => Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Text(
+          title,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+      );
+
+  Widget _buildTextField(String label, TextEditingController controller,
+          {bool readOnly = false}) =>
+      Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: TextField(
+          controller: controller,
+          readOnly: readOnly,
+          decoration: InputDecoration(
+            labelText: label,
+            border: OutlineInputBorder(),
+            filled: true,
+            fillColor: readOnly ? Colors.grey[200] : null,
           ),
-          SizedBox(height: 10),
+        ),
+      );
 
-          TextField(
-            controller: _lastNameController,
-            decoration: InputDecoration(
-                labelText: "Last Name", border: OutlineInputBorder()),
-            readOnly: !isEditing,
+  Widget _buildButtonRow() => Row(
+        children: [
+          ElevatedButton(
+            onPressed: _showAddParentDialog,
+            child: const Text("Add Parent"),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey),
           ),
-          SizedBox(height: 10),
-
-          TextField(
-            controller: _emailController,
-            decoration: InputDecoration(
-                labelText: "Email Address", border: OutlineInputBorder()),
-            readOnly: true,
+          const SizedBox(width: 10),
+          ElevatedButton(
+            onPressed: isEditing
+                ? _saveUserData
+                : () => setState(() => isEditing = true),
+            child: Text(isEditing ? "Save Changes" : "Edit"),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
           ),
-          SizedBox(height: 20),
+        ],
+      );
 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+  List<Widget> _buildChildCards() {
+    if (children.isEmpty) {
+      return [Text("❌ No children found", style: TextStyle(color: Colors.red))];
+    }
+    return children.map((child) {
+      List<String> issueNames = child.issueId != null
+          ? child.issueId!
+              .map((id) => availableIssue
+                  .firstWhere(
+                    (issue) => issue.issueId == id,
+                    orElse: () => IssueModel(
+                        issueId: '', issueContext: 'Unknown', solution: ''),
+                  )
+                  .issueContext)
+              .toList()
+          : [];
+      final age = calculateAgeDetailed(
+          DateFormat('yyyy-MM-dd').format(child.dateOfBirth));
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Align(
-                alignment: Alignment.center,
-                child: ElevatedButton(
-                  onPressed: _showAddParentDialog,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
-                    // Change the color to purple or any color you prefer
-                  ),
-                  child: const Text(
-                    "Add Parent",
-                    style: TextStyle(
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(
-                width: 20,
-              ),
+              Text("Child Name: ${child.childName}",
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(
+                  "DOB: ${DateFormat('yyyy-MM-dd').format(child.dateOfBirth)}"),
+              Text("Age: $age"),
+              Text(
+                  "Health Issues: ${issueNames.isNotEmpty ? issueNames.join(', ') : 'None'}",
+                  style: TextStyle(
+                      color: Colors.redAccent, fontWeight: FontWeight.bold)),
               Align(
                 alignment: Alignment.centerRight,
-                child: ElevatedButton(
-                  onPressed: isEditing
-                      ? _saveUserData
-                      : () {
-                          setState(() {
-                            isEditing = true;
-                          });
-                        },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        isEditing ? Colors.green : Colors.blueAccent,
-                  ),
-                  child: Text(
-                    isEditing ? "Save Changes" : "Edit",
-                    style: TextStyle(color: Colors.black),
-                  ),
+                child: ElevatedButton.icon(
+                  icon: Icon(Icons.delete, color: Colors.white),
+                  label: Text("Remove", style: TextStyle(color: Colors.white)),
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                  onPressed: () => _confirmRemoveChild(child.childId),
                 ),
               ),
             ],
           ),
-
-          SizedBox(height: 30),
-
-          Text("Children",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          SizedBox(height: 10),
-
-          Column(
-            children: children.isNotEmpty
-                ? children.map((child) {
-                    print(
-                        "✅ Displaying Child: ${child.childName}"); // 🔹 Debugging
-
-                    // Convert Issue ID to IssueContext
-                    List<String> issueNames =
-                        child.issueId != null && child.issueId!.isNotEmpty
-                            ? child.issueId!
-                                .map((id) => availableIssue
-                                    .firstWhere(
-                                      (issue) => issue.issueId == id,
-                                      orElse: () => IssueModel(
-                                          issueId: '',
-                                          issueContext: 'Unknown Issue',
-                                          solution: ''),
-                                    )
-                                    .issueContext)
-                                .toList()
-                            : [];
-
-                    return Card(
-                      margin: EdgeInsets.only(bottom: 10),
-                      child: Padding(
-                        padding: EdgeInsets.all(10),
-                        child: Row(
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("Child Name: ${child.childName}",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold)),
-                                Text(
-                                    "DOB: ${DateFormat('yyyy-MM-dd').format(child.dateOfBirth)}"),
-                                Text(
-                                  "Health Issues: ${issueNames.isNotEmpty ? issueNames.join(", ") : "None"}",
-                                  style: TextStyle(
-                                      color: Colors.redAccent,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }).toList()
-                : [
-                    Text("❌ No children found",
-                        style: TextStyle(color: Colors.red))
-                  ], // Show message if empty
-          ),
-
-          SizedBox(height: 20),
-
-          Text("Add Child",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          SizedBox(height: 10),
-
-          // Child Name Input
-          TextField(
-            controller: _childNameController,
-            decoration: InputDecoration(
-                labelText: "Child Name", border: OutlineInputBorder()),
-          ),
-          SizedBox(height: 10),
-
-          // 🔹 Select Health Issues
-          Text("Select Health Issues (Max 3)",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          SizedBox(height: 5),
-
-          Wrap(
-            spacing: 8.0,
-            children: availableIssue.map((issue) {
-              final isSelected = selectedIssues.contains(issue.issueId);
-              return ChoiceChip(
-                label: Text(issue.issueContext),
-                selected: isSelected,
-                onSelected: (selected) {
-                  setState(() {
-                    if (selected && selectedIssues.length < 3) {
-                      selectedIssues.add(issue.issueId);
-                    } else {
-                      selectedIssues.remove(issue.issueId);
-                    }
-                  });
-                },
-              );
-            }).toList(),
-          ),
-          SizedBox(height: 10),
-
-          // 🔹 Date of Birth Picker
-          Text(
-            "Select Date of Birth",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 5),
-
-          ElevatedButton(
-            onPressed: () => _pickDate(context),
-            child: Text(
-              _selectedDate == null
-                  ? "Pick Date of Birth"
-                  : "DOB: ${DateFormat('yyyy-MM-dd').format(_selectedDate!)}",
-            ),
-          ),
-          SizedBox(height: 10),
-
-          ElevatedButton(
-            onPressed: _addChild,
-            child: Text("Add Child"),
-          ),
-        ]),
-      ),
-    );
+        ),
+      );
+    }).toList();
   }
+
+  Widget _buildIssueChips() => Wrap(
+        spacing: 8.0,
+        children: availableIssue.map((issue) {
+          final isSelected = selectedIssues.contains(issue.issueId);
+          return ChoiceChip(
+            label: Text(issue.issueContext),
+            selected: isSelected,
+            selectedColor: Colors.blueAccent,
+            onSelected: (selected) {
+              setState(() {
+                if (selected && selectedIssues.length < 3) {
+                  selectedIssues.add(issue.issueId);
+                } else {
+                  selectedIssues.remove(issue.issueId);
+                }
+              });
+            },
+          );
+        }).toList(),
+      );
+
+  Widget _buildDatePickerButton() => ElevatedButton(
+        onPressed: () => _pickDate(context),
+        child: Text(
+          _selectedDate == null
+              ? "Pick Date of Birth"
+              : "DOB: ${DateFormat('yyyy-MM-dd').format(_selectedDate!)}",
+        ),
+      );
+
+  Widget _buildAddChildButton() => Padding(
+        padding: const EdgeInsets.only(top: 10),
+        child: ElevatedButton(
+          onPressed: _addChild,
+          child: Text("Add Child"),
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.blueAccent),
+        ),
+      );
 }
