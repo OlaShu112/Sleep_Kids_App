@@ -409,9 +409,8 @@ Future<void> addAwakeningsToSleepData(String sleepId, List<String> awakeningIdLi
 Future<List<SleepData>> getSleepDataByChildId(String childId) async {
   try {
     final snapshot = await FirebaseFirestore.instance
-        .collection('sleepData')
-        .where('child_id', isEqualTo: childId)
-        //.orderBy('date', descending: false)
+        .collection('sleep_data') // Make sure the collection name is correct
+        .where('childId', isEqualTo: childId)
         .get();
 
     return snapshot.docs.map((doc) => SleepData.fromDocument(doc)).toList();

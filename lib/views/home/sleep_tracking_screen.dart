@@ -167,14 +167,16 @@ Future<void> _saveSleepData(String childId) async {
     try {
       // Create a SleepData object to pass to the Firebase service
       SleepData sleepData = SleepData(
-        sleepId: DateTime.now().millisecondsSinceEpoch.toString(), // Generate a unique ID
-        bedtime: _bedtimes[childId]!,
-        wakeUpTime: _wakeUpTimes[childId]!,
-        sleepDuration: _sleepDurations[childId]!.toInt(),
-        notes: 'Sleep data recorded',
-        watchConnected: false,
-        awakeningsId: _tempAwakenings[childId] ?? [], // Include all awakening IDs from the temporary list
-      );
+  sleepId: DateTime.now().millisecondsSinceEpoch.toString(),
+  childId: childId, // 🔥 Add this
+  bedtime: _bedtimes[childId]!,
+  wakeUpTime: _wakeUpTimes[childId]!,
+  sleepDuration: _sleepDurations[childId]!.toInt(),
+  notes: 'Sleep data recorded',
+  watchConnected: false,
+  awakeningsId: _tempAwakenings[childId] ?? [],
+);
+
 
       // Use FirebaseService to add the sleep data
       await _firebaseService.addSleepData(sleepData);
