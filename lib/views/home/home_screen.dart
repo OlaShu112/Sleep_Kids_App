@@ -128,14 +128,16 @@ class CustomNavbar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: Colors.deepPurple.shade900.withOpacity(0.95),
+      backgroundColor: const Color.fromARGB(255, 17, 53, 137).withOpacity(0.95),
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
           DrawerHeader(
+            
             decoration: const BoxDecoration(
+              
               gradient: LinearGradient(
-                colors: [Colors.deepPurple, Colors.purpleAccent],
+                colors: [Color.fromARGB(255, 55, 89, 192), Color.fromARGB(255, 56, 63, 194)],
               ),
             ),
             child: Column(
