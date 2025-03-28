@@ -240,8 +240,8 @@ Widget build(BuildContext context) {
             DropdownButton<String>(
               value: selectedChildId,
               isExpanded: true,
-              style: const TextStyle(fontSize: 16, color: Colors.black),
-              dropdownColor: Colors.white,
+              style: const TextStyle(fontSize: 16, color: Colors.white),
+              dropdownColor: const Color.fromARGB(255, 174, 119, 237),
               items: childProfiles.map((doc) {
                 return DropdownMenuItem(
                   value: doc.id,
