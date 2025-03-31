@@ -1,6 +1,6 @@
 # project
 
-A new Flutter project.
+SleepKids App ELAROS group 3
 
 ## Getting Started
 
