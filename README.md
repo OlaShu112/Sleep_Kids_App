@@ -27,6 +27,12 @@ Run the Application
 
 flutter run 
 
-## Getting Started
+## Using Emulators
+
+run flutter emulators
+
+run flutter emulators launch <emulatorId>
+
+run flutter
 
 
