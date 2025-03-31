@@ -18,7 +18,7 @@ Install Dependencies
 
 flutter pub get 
 
-Set Up Firebase 
+##Set Up Firebase 
 
 Create a Firebase project. 
 Add google-services.json (for Android) and GoogleService-Info.plist (for iOS) in the respective directories. 
